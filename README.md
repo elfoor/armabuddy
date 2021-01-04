@@ -11,7 +11,7 @@ Required non-default Python modules:
 
 ### BOT SETTINGS ###
 Settings is located in a big silly dict inside bot.py.
-```
+```py
 settings = {
   'gamelist_urls': [
     'http://wormnet1.team17.com/wormageddonweb/GameList.asp?Channel=AnythingGoes',
@@ -23,7 +23,7 @@ settings = {
   'wormnet_user': 'Discord',
   # password neeeded to enter wormnet, stolen from great snooper
   'wormnet_pass': 'ELSILRACLIHP',
-  # messages coming from this nickname will be parsed and shown as originating from whoever wrote from snooper
+  # messages coming from this nickname will be handled to appear as originating from snooper user
   'wormnet_snooper': 'WebSnoop',
   # when getting a PM it will automatically reply with this message
   'wormnet_message': (
@@ -61,7 +61,8 @@ settings = {
   'discord_guilds': {
     # 'discord-guild': {}
     'Worms Armageddon ?': {
-      # which discord channel to put gamelist, None if not enabled (will still poll gamelist hosts, oops)
+      # which discord channel to put gamelist, None if not enabled
+      # (will still poll gamelist hosts, oops)
       'gamelist': 'open-games',
       # bi-directional link between channels
       #'discord-channel': 'irc-channel',
