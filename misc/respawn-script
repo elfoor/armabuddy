@@ -1,0 +1,45 @@
+#!/bin/sh
+
+BOT_USER=armageddon
+BOT_PATH=/home/armageddon/bot.py
+PID_FILE=/run/armabuddy.pid
+LOG_FILE=/var/log/armabuddy.log
+
+# begin looping if being called with arguments
+if [[ $# -ne 0 ]]; then
+	trap 'kill -9 $BOT_PID' EXIT
+	while [ True ]; do
+		$BOT_PATH &>> $LOG_FILE &
+		BOT_PID=$!
+		wait $BOT_PID &>> $LOG_FILE
+		/bin/sleep 30
+	done
+	exit
+fi
+
+if [ `id -u` -ne 0 ]; then
+	echo 'Bot preparations must be done by root. (lol)'
+	exit 1
+fi
+
+if [ -e $PID_FILE ]; then
+	if pgrep -F $PID_FILE ; then
+		# process is already running, exit
+		exit
+	else
+		# zombie process, remove pid file
+		rm -f $PID_FILE
+	fi
+fi
+
+# prepare needed files
+touch $LOG_FILE
+chown $BOT_USER $LOG_FILE
+touch $PID_FILE
+chown $BOT_USER $PID_FILE
+
+# execute bot
+SCRIPT_DIR=`dirname $0 | while read a; do cd $a && pwd && break; done`
+SCRIPT_CMD="$SCRIPT_DIR/`basename $0` loop"
+su - $BOT_USER -s /bin/sh -c "$SCRIPT_CMD" &
+echo $! > $PID_FILE

@@ -1,0 +1,32 @@
+#!/bin/sh
+
+. /lib/lsb/init-functions
+
+case "$1" in
+   start)
+      log_info_msg "Starting ArmaBuddy..."
+			start_daemon -p /run/armabuddy.pid /bin/armabuddy
+      evaluate_retval
+      ;;
+
+   stop)
+      log_info_msg "Stopping ArmaBuddy..."
+			killproc -p /run/armabuddy.pid /bin/armabuddy
+      evaluate_retval
+      ;;
+
+   restart)
+      $0 stop
+      sleep 1
+      $0 start
+      ;;
+
+   status)
+      statusproc -p /run/armabuddy.pid /bin/armabuddy
+      ;;
+
+   *)
+      echo "Usage: $0 {start|stop|restart|status}"
+      exit 1
+      ;;
+esac
