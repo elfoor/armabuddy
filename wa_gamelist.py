@@ -26,7 +26,7 @@ class WA_Gamelist():
 	async def fetch(self):
 		games = []
 		for list in self.gamelist_urls:
-			self.logger.warning(f' * Fetching gamelist: {list}.')
+			self.logger.debug(f' * Fetching gamelist: {list}.')
 			response = await self.session.get(list, headers = self.headers)
 			data = await response.read()
 			html = WA_Encoder.decode(data)

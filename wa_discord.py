@@ -18,6 +18,7 @@ class WA_Discord(discord.Client):
 		self.logger = logging.getLogger('WA_Logger')
 		self._intents = discord.Intents.default()
 		self._intents.members = True
+		self.prepared = False
 
 		# embed config
 		self.embed_gamelist_title = 'Currently active games in #anythinggoes'
@@ -181,6 +182,11 @@ class WA_Discord(discord.Client):
 
 	# edits pinned message containing game lists
 	async def update_gamelists(self, **kwargs):
+
+		# not safe to interact with discord before initialization is complete
+		if not self.prepared:
+			return self.logger.warning(' ! Attempted to forward message to Discord before initialization was fully complete.')
+
 		for name, item in self.guild_list.items():
 			if item['gamelist']:
 				await item['gamelist']['message'].edit(**kwargs)
@@ -188,6 +194,11 @@ class WA_Discord(discord.Client):
 
 	#edits pinned messages containing user list for given channel
 	async def update_userlists(self, channel: str, users: set):
+
+		# not safe to interact with discord before initialization is complete
+		if not self.prepared:
+			return self.logger.warning(' ! Attempted to update userlist on Discord before initialization was fully complete.')
+
 		userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now() - timedelta(hours = 1))
 		userlist.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
 
@@ -218,6 +229,10 @@ class WA_Discord(discord.Client):
 
 	# forwards messages to channel using webhooks, if nickname exist on discord it will use their avatar
 	async def forward_message(self, channel: str, sender: str, message: str, action: bool = False, snooper: str = None, origin: discord.TextChannel = None):
+
+		# not safe to interact with discord before initialization is complete
+		if not self.prepared:
+			return self.logger.warning(' ! Attempted to forward message to Discord before initialization was fully complete.')
 
 		# ignore blank lines, since discord won't let me post a message withonly whitespaces.
 		if not message or message.isspace():
@@ -266,12 +281,16 @@ class WA_Discord(discord.Client):
 		raise
 
 	async def on_ready(self):
-		self.logger.warning(f' * {self.user.name} has connected to Discord!')
 		await self.check_guilds()
 		await self.check_channels()
 		await self.check_gamelists()
 		await self.check_userlists()
 		await self.check_webhooks()
+		self.prepared = True
+		self.logger.warning(f' * {self.user.name} has been fully initialized!')
 
 	async def on_disconnect(self):
 		self.logger.warning(f' * {self.user.name} has disconnected from Discord!')
+
+	async def on_connect(self):
+		self.logger.warning(f' * {self.user.name} has connected to Discord!')
