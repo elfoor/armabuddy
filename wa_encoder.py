@@ -39,9 +39,13 @@ class WA_Encoder():
 
 	decode_table = dict(zip(intab, outtab))
 	encode_table = dict(zip(map(str, outtab), map(lambda a: a.to_bytes(1, 'big'), intab)))
+	trans_table = ''.maketrans(u'аеёорстухАВЕЁМНОРСТХ', u'aeëopcтyxABEËMHOPCTX')
 
 	def decode(text: bytes):
 		return ''.join(map(lambda a: __class__.decode_table[a], text))
 
 	def encode(text: str):
 		return b''.join(map(lambda a: __class__.encode_table[a] if a in __class__.encode_table else b'\x20', text))
+
+	def translate(text: str):
+		return text.translate(__class__.trans_table)

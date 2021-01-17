@@ -168,6 +168,8 @@ class WA_IRC():
 	async def transport_write(self, message):
 		if self.connection._connected:
 			message = message + '\r\n'
+			# W:A client transforms some of the cyrillic characters to latin when typing, in addition to encoding
+			message = WA_Encoder.translate(message)
 			message = WA_Encoder.encode(message) if self.transcode == True else message.encode()
 			self.connection._transport.write(message)
 		else:
