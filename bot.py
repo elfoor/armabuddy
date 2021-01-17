@@ -188,6 +188,12 @@ try:
 					'anythinggoes': 'anythinggoes',
 					'help': 'help'
 				}
+			},
+			'Worms United': {
+				'gamelist': 'open-games',
+				'channels': {
+					'anything-goes': 'anythinggoes',
+				}
 			}
 		}
 	}
