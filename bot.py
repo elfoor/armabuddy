@@ -117,10 +117,10 @@ async def discord_handle_message(message):
 			return
 
 	# forward to all other discord servers
-	channel = await discord.find_forward_channel(channel = message.channel.id)
+	channel = await discord.find_forward_channel(channel = message.channel)
 	sender = message.author.name
 	snooper = 'Other Discord'
-	await discord.forward_message(channel = channel, sender = sender, message = message.content, snooper = snooper, origin = message.channel.id)
+	await discord.forward_message(channel = channel, sender = sender, message = message.content, snooper = snooper, origin = message.channel)
 
 	# finally forward to IRC
 	for guild_name, guild_info in discord.guild_list.items():
@@ -140,10 +140,8 @@ try:
 	### BOT SETTINGS ###
 	settings = {
 		'gamelist_urls': [
-			'http://wormnet1.team17.com/wormageddonweb/GameList.asp?Channel=AnythingGoes',
-			'http://wormnet.net/wormageddonweb/GameList.asp?Channel=AnythingGoes'
+			'http://wormnet1.team17.com/wormageddonweb/GameList.asp?Channel=AnythingGoes'
 		],
-		#'wormnet_host': 'wormnet.net',
 		'wormnet_host': 'wormnet1.team17.com',
 		'wormnet_port': 6667,
 		'wormnet_user': 'Discord',
@@ -174,7 +172,7 @@ try:
 			'WormsLeague': 'Spammer.',
 			'CorujaBOT': 'League spammer.' # remove this
 		},
-		'discord_token': 'ODQ5MjY1NTA0Mjg3NTg4Mzgy.YLYqIg.q7A59F8pr4JrsFHyzXLk9etyBm0',
+		'discord_token': 'ODQ5MjY1NTA0Mjg3NTg4Mzgy.YLYqIg.SZByxeXFaRQYF1Jyq6x3UU-lbk8',
 		'discord_guilds': {
 			# guilds that will have bot enabled on them
 			# 'discord-guild': {}
@@ -185,8 +183,8 @@ try:
 				'channels': {
 					# bi-directional link between channels
 					#'discord-channel': 'irc-channel',
-					849295935040651285: 'AnythingGoes',
-					849295966523097098: 'Help'
+					849295935040651285: 'anythinggoes',
+					849295966523097098: 'help'
 				}
 			},
 
@@ -208,7 +206,7 @@ try:
 	loop.set_exception_handler(fatal_handler)
 
 	### DISCORD SETUP ###
-	discord = WA_Discord(forwarding = settings['discord_guilds'],	token = settings['discord_token'])
+	discord = WA_Discord(forwarding = settings['discord_guilds'],	token = settings['discord_token'],)
 	discord.on_message = discord_handle_message
 	loop.create_task(discord.run())
 

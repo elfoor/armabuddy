@@ -16,8 +16,7 @@ class WA_Discord(discord.Client):
 		self.settings = forwarding		# dict containing settings on which guilds and channels we need to make sure exist
 		self.guild_list = {}					# dict that will contain all references to channels and guilds
 		self.logger = logging.getLogger('WA_Logger')
-		self._intents = discord.Intents.default()
-		self._intents.members = True
+		self._intents = discord.Intents.all()
 		self.prepared = False
 
 		# embed config
@@ -271,7 +270,7 @@ class WA_Discord(discord.Client):
 	async def find_forward_channel(self, channel: discord.TextChannel):
 		for guild_name, guild_info in self.guild_list.items():
 			for channel_name, channel_info in guild_info['channels'].items():
-				if channel_info['channel'] == channel and guild_info['guild'] == channel.guild.name:
+				if channel_info['channel'] == channel.id and guild_info['guild'] == channel.guild:
 					return channel_info['forward']
 		return False
 
