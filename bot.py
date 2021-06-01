@@ -117,10 +117,10 @@ async def discord_handle_message(message):
 			return
 
 	# forward to all other discord servers
-	channel = await discord.find_forward_channel(channel = message.channel)
+	channel = await discord.find_forward_channel(channel = message.channel.id)
 	sender = message.author.name
 	snooper = 'Other Discord'
-	await discord.forward_message(channel = channel, sender = sender, message = message.content, snooper = snooper, origin = message.channel)
+	await discord.forward_message(channel = channel, sender = sender, message = message.content, snooper = snooper, origin = message.channel.id)
 
 	# finally forward to IRC
 	for guild_name, guild_info in discord.guild_list.items():
@@ -174,29 +174,26 @@ try:
 			'WormsLeague': 'Spammer.',
 			'CorujaBOT': 'League spammer.' # remove this
 		},
-		'discord_token': '[discord-bot-token]',
+		'discord_token': 'ODQ5MjY1NTA0Mjg3NTg4Mzgy.YLYqIg.q7A59F8pr4JrsFHyzXLk9etyBm0',
 		'discord_guilds': {
 			# guilds that will have bot enabled on them
 			# 'discord-guild': {}
-			'Worms Armageddon ☢': {
+			817807686841663560: {
 				# channel to put gamelist in, None if not enabled
 				# 'gamelist: 'discord-channel',
-				'gamelist': 'open-games',
+				'gamelist': 849295916325535755,
 				'channels': {
 					# bi-directional link between channels
 					#'discord-channel': 'irc-channel',
-					'anythinggoes': 'anythinggoes',
-					'help': 'help'
+					849295935040651285: 'AnythingGoes',
+					849295966523097098: 'Help'
 				}
 			},
-			'Worms United': {
-				'gamelist': 'open-games',
-				'channels': {
-					'anything-goes': 'anythinggoes',
+
 				}
 			}
-		}
-	}
+		
+	
 
 	### GLOBALS SETUP ###
 	help_activity_dict = {}

@@ -24,7 +24,7 @@ class WA_Discord(discord.Client):
 		self.embed_gamelist_title = 'Currently active games in #anythinggoes'
 		self.embed_color = 0xffa300
 		self.embed_icon = 'https://cdn.discordapp.com/icons/416225356706480128/033384c17dfc13dfc8a5311f52817baa.png'
-		self.embed_footer = 'List last refreshed at'
+		self.embed_footer = 'List last refreshed at:'
 		self.embed_default_flag = ':checkered_flag:'
 		self.embed_public_game = ':unlock:'
 		self.embed_private_game = ':closed_lock_with_key:'
@@ -82,36 +82,36 @@ class WA_Discord(discord.Client):
 	# make sure all our configured Guild(s) exist
 	async def check_guilds(self):
 		# for every guild we have setup
-		for name, settings in self.settings.items():
+		for aid, settings in self.settings.items():
 			#check if guild exist in joined guild list
 			for guild in self.guilds:
-				if guild.name == name:
-					self.logger.warning(f' * Found guild with name "{name}"!')
-					self.guild_list[name] = {
+				if guild.id == aid:
+					self.logger.warning(f' * Found guild with id "{aid}"!')
+					self.guild_list[aid] = {
 						'guild': guild,
-						'channels': self.settings[name]['channels'],
-						'gamelist': self.settings[name]['gamelist'] if 'gamelist' in self.settings[name] else None
+						'channels': self.settings[aid]['channels'],
+						'gamelist': self.settings[aid]['gamelist'] if 'gamelist' in self.settings[aid] else None
 					}
-			if not name in self.guild_list:
-				raise Exception(f'Could not find guild with name "{name}".')
+			if not aid in self.guild_list:
+				raise Exception(f'Could not find guild with id "{aid}".')
 
 
 	# make sure all Guild(s) have the TextChannel(s) we have set up
 	async def check_channels(self):
+
 		# for every guild we have setup
 		for name, item in self.guild_list.items():
 			for channel in item['guild'].text_channels:
-
-				if channel.name in item['channels']:
+				if channel.id in item['channels']:
 					self.logger.warning(f' * Found message forwarding channel #{channel.name} in guild "{name}"!')
-					item['channels'][channel.name] = {
+					item['channels'][channel.id] = {
 						'channel': channel,
-						'forward': item['channels'][channel.name],
+						'forward': item['channels'][channel.id],
 						'webhook': {},
 						'message': {}
 					}
 
-				if item['gamelist'] and channel.name == item['gamelist']:
+				if item['gamelist'] and channel.id == item['gamelist']:
 					self.logger.warning(f' * Found game list channel #{channel.name} in guild "{name}"!')
 					item['gamelist'] = {
 						'channel': channel,
@@ -120,7 +120,7 @@ class WA_Discord(discord.Client):
 
 			for channel, values in item['channels'].items():
 				if type(values) != dict:
-					raise Exception(f'Could not find the message forwarding channel #{channel} in guild "{name}".')
+					raise Exception(f'Could not find the message forwarding channel #{channel.name} in guild "{name}".')
 
 			if item['gamelist'] and (type(item['gamelist']) != dict or not isinstance(item['gamelist']['channel'], discord.TextChannel)):
 				raise Exception(f'Could not find the game list channel #{item["gamelist"]} in guild "{name}".')
@@ -271,7 +271,7 @@ class WA_Discord(discord.Client):
 	async def find_forward_channel(self, channel: discord.TextChannel):
 		for guild_name, guild_info in self.guild_list.items():
 			for channel_name, channel_info in guild_info['channels'].items():
-				if channel_info['channel'] == channel and guild_info['guild'] == channel.guild:
+				if channel_info['channel'] == channel and guild_info['guild'] == channel.guild.name:
 					return channel_info['forward']
 		return False
 
