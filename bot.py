@@ -172,24 +172,27 @@ try:
 			'WormsLeague': 'Spammer.',
 			'CorujaBOT': 'League spammer.' # remove this
 		},
-		'discord_token': 'ODQ5MjY1NTA0Mjg3NTg4Mzgy.YLYqIg.SZByxeXFaRQYF1Jyq6x3UU-lbk8',
+		'discord_token': '[discord-bot-token]',
 		'discord_guilds': {
 			# guilds that will have bot enabled on them
-			# 'discord-guild': {}
-			817807686841663560: {
+			# 'discord-guild-id': {}
+			'416225356706480128': {
 				# channel to put gamelist in, None if not enabled
-				# 'gamelist: 'discord-channel',
-				'gamelist': 849295916325535755,
+				# 'gamelist: 'discord-channel-id',
+				'gamelist': '783363290557579305',
 				'channels': {
 					# bi-directional link between channels
-					#'discord-channel': 'irc-channel',
-					849295935040651285: 'anythinggoes',
-					849295966523097098: 'help'
+					#'discord-channel-id': 'irc-channel',
+					'783002654501634058': 'anythinggoes',
+					'783362534451314718': 'help'
 				}
 			},
+			'750008689674682409': {
+				'gamelist': '793507434504650773',
 
-				}
 			}
+		}
+	}
 		
 	
 
