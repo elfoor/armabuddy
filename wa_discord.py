@@ -28,7 +28,7 @@ class WA_Discord(discord.Client):
 		self.embed_default_flag = ':checkered_flag:'
 		self.embed_public_game = ':unlock:'
 		self.embed_private_game = ':closed_lock_with_key:'
-		self.embed_no_host = '*There are currently no games hosted on WormNet..* :sadworm:'
+		self.embed_no_host = '*There are currently no games hosted on WormNet..* <:sadworm:750758902005497857>'
 		self.embed_no_users = '*There are currently no users online on WormNet, something is probably horribly wrong.'
 
 		# static messages
