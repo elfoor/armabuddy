@@ -140,10 +140,8 @@ try:
 	### BOT SETTINGS ###
 	settings = {
 		'gamelist_urls': [
-			'http://wormnet1.team17.com/wormageddonweb/GameList.asp?Channel=AnythingGoes',
-			'http://wormnet.net/wormageddonweb/GameList.asp?Channel=AnythingGoes'
+			'http://wormnet1.team17.com/wormageddonweb/GameList.asp?Channel=AnythingGoes'
 		],
-		#'wormnet_host': 'wormnet.net',
 		'wormnet_host': 'wormnet1.team17.com',
 		'wormnet_port': 6667,
 		'wormnet_user': 'Discord',
@@ -177,26 +175,26 @@ try:
 		'discord_token': '[discord-bot-token]',
 		'discord_guilds': {
 			# guilds that will have bot enabled on them
-			# 'discord-guild': {}
-			'Worms Armageddon ☢': {
+			# 'discord-guild-id': {}
+			'416225356706480128': {
 				# channel to put gamelist in, None if not enabled
-				# 'gamelist: 'discord-channel',
-				'gamelist': 'open-games',
+				# 'gamelist: 'discord-channel-id',
+				'gamelist': '783363290557579305',
 				'channels': {
 					# bi-directional link between channels
-					#'discord-channel': 'irc-channel',
-					'anythinggoes': 'anythinggoes',
-					'help': 'help'
+					#'discord-channel-id': 'irc-channel',
+					'783002654501634058': 'anythinggoes',
+					'783362534451314718': 'help'
 				}
 			},
-			'Worms United': {
-				'gamelist': 'open-games',
-				'channels': {
-					'anything-goes': 'anythinggoes',
-				}
+			'750008689674682409': {
+				'gamelist': '793507434504650773',
+
 			}
 		}
 	}
+		
+	
 
 	### GLOBALS SETUP ###
 	help_activity_dict = {}
@@ -211,7 +209,7 @@ try:
 	loop.set_exception_handler(fatal_handler)
 
 	### DISCORD SETUP ###
-	discord = WA_Discord(forwarding = settings['discord_guilds'],	token = settings['discord_token'])
+	discord = WA_Discord(forwarding = settings['discord_guilds'],	token = settings['discord_token'],)
 	discord.on_message = discord_handle_message
 	loop.create_task(discord.run())
 

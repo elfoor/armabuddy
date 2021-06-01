@@ -18,7 +18,7 @@ class WA_Gamelist():
 		self.gamelist_urls = kwargs['gamelist_urls']
 		self.session = aiohttp.ClientSession()
 		self.headers = {
-			'User-Agent': 'T17Client/3.8 (Steam)',
+			'User-Agent': 'T17Client/3.9 (Steam)',
 			'UserLevel': '0',
 			'UserServerIdent': '2'
 		}
