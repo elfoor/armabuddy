@@ -5,20 +5,23 @@ import discord
 import traceback
 import logging
 import re
+import asyncio
 from typing import Union
 from datetime import datetime, timedelta
 from wa_flags import WA_Flags
 
 class WA_Discord(discord.Client):
-	def __init__(self, token: str, forwarding: dict):
+	def __init__(self, token: str, guilds: dict):
 		# internal properties
 		self.token = token						# discord token used for authenticating bot
-		self.settings = forwarding		# dict containing settings on which guilds and channels we need to make sure exist
+		self.settings = guilds				# dict containing settings on which guilds and channels we need to make sure exist
 		self.guild_list = {}					# dict that will contain all references to channels and guilds
 		self.logger = logging.getLogger('WA_Logger')
 		self._intents = discord.Intents.default()
 		self._intents.members = True
 		self.prepared = False
+		self.irc_reference = None
+		self.forward_message = lambda x: x
 
 		# embed config
 		self.embed_gamelist_title = 'Currently active games in #anythinggoes'
@@ -193,42 +196,45 @@ class WA_Discord(discord.Client):
 				self.logger.warning(f' * Updated pinned game list in #{item["gamelist"]["channel"].name} on "{name}".')
 
 	#edits pinned messages containing user list for given channel
-	async def update_userlists(self, channel: str, users: set):
+	async def update_userlists(self, channels: dict, interval = 7):
+		while True:
+			await asyncio.sleep(interval)
 
-		# not safe to interact with discord before initialization is complete
-		if not self.prepared:
-			return self.logger.warning(' ! Attempted to update userlist on Discord before initialization was fully complete.')
+			# not safe to interact with discord before initialization is complete
+			if not self.prepared:
+				return self.logger.warning(' ! Attempted to update userlist on Discord before initialization was fully complete.')
 
-		userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now() - timedelta(hours = 1))
-		userlist.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
+			for channel, users in channels.items():
+				userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now() - timedelta(hours = 1))
+				userlist.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
 
-		if not users or not len(users):
-			userlist.description = self.embed_no_users
-		else:
-			users = sorted(users, key=str.lower)
-			field = ''
-			title = str(len(users)) + ' users online in #' + channel
-			for user in users:
-				append = discord.utils.escape_markdown(user) + '\n'
-
-				if len(field) + len(append) >= 1024:
-					userlist.add_field(name=title, value=field, inline = False)
+				if not users or not len(users):
+					userlist.description = self.embed_no_users
+				else:
+					users = sorted(users, key=str.lower)
 					field = ''
-				field += append
+					title = str(len(users)) + ' users online in #' + channel
+					for user in users:
+						append = discord.utils.escape_markdown(user) + '\n'
 
-			if len(field) <= 0:
-				userlist.description = self.embed_no_host
-			else:
-				userlist.add_field(name=title, value=field, inline = False)
+						if len(field) + len(append) >= 1024:
+							userlist.add_field(name=title, value=field, inline = False)
+							field = ''
+						field += append
 
-		for guild_name, guild_info in self.guild_list.items():
-			for channel_name, channel_info in guild_info['channels'].items():
-				if channel == channel_info['forward']:
-					await channel_info['message'].edit(content = None, embed = userlist)
+					if len(field) <= 0:
+						userlist.description = self.embed_no_host
+					else:
+						userlist.add_field(name=title, value=field, inline = False)
+
+				for guild_name, guild_info in self.guild_list.items():
+					for channel_name, channel_info in guild_info['channels'].items():
+						if channel == channel_info['forward']:
+							await channel_info['message'].edit(content = None, embed = userlist)
 
 
 	# forwards messages to channel using webhooks, if nickname exist on discord it will use their avatar
-	async def forward_message(self, channel: str, sender: str, message: str, action: bool = False, snooper: str = None, origin: discord.TextChannel = None):
+	async def send_message(self, channel: str, sender: str, message: str, action: bool = False, snooper: str = None, origin: discord.TextChannel = None):
 
 		# not safe to interact with discord before initialization is complete
 		if not self.prepared:
@@ -275,7 +281,29 @@ class WA_Discord(discord.Client):
 					return channel_info['forward']
 		return False
 
+
 	""" EVENT LISTENERS """
+	async def on_message(self, message):
+		if message.author == self.user or not len(message.clean_content) or message.webhook_id:
+				return
+
+		# forward to all other discord servers
+		channel = await self.find_forward_channel(channel = message.channel)
+		sender = message.author.name
+		snooper = 'Other Discord'
+		await self.send_message(channel = channel, sender = sender, message = message.content, snooper = snooper, origin = message.channel)
+
+		# finally forward to IRC
+		for guild_name, guild_info in self.guild_list.items():
+			for channel_name, channel_info in guild_info['channels'].items():
+				if channel_info['channel'] == message.channel and guild_info['guild'] == message.guild:
+					await self.forward_message(
+						guild = guild_name,
+						origin = channel_name,
+						channel = channel_info['forward'],
+						message = f'{message.author.display_name}> {message.clean_content}'
+					)
+
 	# catch all errors and propagate this error to the loop exception handler
 	async def on_error(self, event):
 		raise

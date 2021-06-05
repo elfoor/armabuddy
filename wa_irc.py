@@ -1,10 +1,12 @@
 import asyncio
 import logging
 import re
+from datetime import datetime
 from asyncirc.protocol import IrcProtocol
 from asyncirc.server import Server
 from irclib.parser import Message
 from wa_encoder import WA_Encoder
+from wa_settings import WA_Settings
 
 class WA_IRC():
 	def __init__(self, *args, **kwargs):
@@ -12,14 +14,14 @@ class WA_IRC():
 			if not kwargs:
 				raise ValueError('Missing required keyword arguments.')
 
-			if not 'nickname' in kwargs or not isinstance(kwargs['nickname'], str):
-				raise ValueError('Invalid nickname.')
+			if not 'username' in kwargs or not isinstance(kwargs['username'], str):
+				raise ValueError('Invalid username.')
 
-			if not 'wormnet' in kwargs or not isinstance(kwargs['wormnet'], str):
+			if not 'hostname' in kwargs or not isinstance(kwargs['hostname'], str):
 				raise ValueError('Invalid WormNet server.')
 
-			if not 'channels' in kwargs or not isinstance(kwargs['channels'], dict):
-				raise ValueError('Invalid WormNet channel dict.')
+			if not 'channels' in kwargs or not isinstance(kwargs['channels'], list):
+				raise ValueError('Invalid WormNet channel list.')
 
 			if not 'port' in kwargs or not isinstance(kwargs['port'], int):
 				raise ValueError('Invalid WormNet port.')
@@ -28,9 +30,12 @@ class WA_IRC():
 				raise ValueError('Invalid event loop.')
 
 			self.logger = logging.getLogger('WA_Logger')
-			self.wormnet = kwargs.pop('wormnet')
-			self.nickname = kwargs.pop('nickname')
-			self.channels = dict.fromkeys(kwargs.pop('channels').keys())
+			self.wormnet = kwargs.pop('hostname')
+			self.nickname = kwargs.pop('username')
+			self.channels = dict(zip(kwargs.get('channels'), [set() for x in kwargs.get('channels')]))
+			self.handlers = dict(zip(kwargs.get('channels'), [{} for x in kwargs.get('channels')]))
+			self.commands = dict(zip(kwargs.get('channels'), [False for x in kwargs.get('channels')]))
+			self.activity = dict(zip(kwargs.get('channels'), [{} for x in kwargs.get('channels')]))
 			self.port = kwargs.pop('port')
 			self.password = kwargs.pop('password', None)
 			self.is_ssl = kwargs.pop('is_ssl', False)
@@ -38,11 +43,15 @@ class WA_IRC():
 			self.transcode = False
 			self.reconnect_delay = 30
 			self.server = Server(self.wormnet, self.port, self.is_ssl, password = self.password)
+			self.reply_message = kwargs.get('reply_message', 'Armabuddy!')
+			self.ignore = kwargs.get('ignore', [])
+			self.snooper = kwargs.get('snooper', 'WebSnoop')
+			self.forward_message = lambda x: x
 
 			# register handlers for every needed internal
 			self.connection = IrcProtocol([self.server], self.nickname, loop=self.loop)
 			self.connection.register_cap('userhost-in-names')
-			self.connection.register('*', self.log)
+			self.connection.register('*', self.handle_command)
 			self.connection.register('002', self.decide_transcode)
 			self.connection.register('376', self.join_channels)
 			self.connection.register('JOIN', self.handle_entry)
@@ -138,7 +147,6 @@ class WA_IRC():
 	async def join_channels(self, conn, message):
 		for channel_name, settings in self.channels.items():
 			# create new set containing user list
-			self.channels[channel_name] = set(())
 			self.logger.warning(f' * Joining WormNet channel: #{channel_name}!')
 			self.connection.send(f'JOIN #{channel_name}')
 
@@ -147,7 +155,7 @@ class WA_IRC():
 			if result == None:
 				raise Exception(f'Never recieved NAMES after joining WormNet channel #{channel}.')
 
-	async def forward_message(self, guild, origin, channel, message):
+	async def send_message(self, guild, origin, channel, message):
 		# strip everything after \n to avoid sneaky user sending multiple commands in single string
 		message = message.split('\n')[0]
 		message = f'PRIVMSG #{channel} :{message}'
@@ -157,7 +165,7 @@ class WA_IRC():
 		self.logger.warning(f' * Forwarding message from #{origin} on "{guild}" to WormNet #{channel}: {message}')
 		await self.transport_write(message)
 
-	async def forward_private(self, user, message):
+	async def send_private(self, user, message):
 		# strip everything after \n to avoid sneaky user sending multiple commands in single string
 		message = message.split('\n')[0]
 		message = f'PRIVMSG {user} :{message}'
@@ -174,3 +182,58 @@ class WA_IRC():
 			self.connection._transport.write(message)
 		else:
 			self.logger.warning(' ! Could not forward message due to connection to IRC being down!')
+
+	async def handle_command(self, connection, message):
+		# ignore commands triggered by self
+		if message.prefix.nick == self.nickname:
+			return
+
+		# if destination is a channel call handler
+		if message.parameters[0][0] == '#':
+			channel = message.parameters[0][1:].lower()
+
+			# if user writes in a channel, update activity
+			if message.command == 'PRIVMSG':
+				self.activity[channel][message.prefix.nick] = datetime.now()
+
+			if channel in self.channels and message.command in self.handlers[channel]:
+				return await self.handlers[channel][message.command](connection, message)
+
+		# reply to all PM with predefined phrase
+		elif message.parameters[0][0] != '#' and message.command == 'PRIVMSG':
+			self.logger.warning(f' * Recieved PM on WormNET from {message.prefix.nick}: {message.parameters[1]}')
+			return await self.send_private(user = message.prefix.nick, message = self.reply_message)
+
+	async def default_privmsg_handler(self, connection, message):
+		# lowercase channel / username
+		message.parameters[0] = message.parameters[0].lower()
+
+		# check if channel allows commands
+		if len(message.parameters[1]) and message.parameters[1][0] == '!':
+			if not self.commands[message.parameters[0][1:]]:
+				return self.logger.warning(f' * Ignoring command in {message.parameters[0]} from {message.prefix.nick}: {message.parameters[1]}')
+
+		# handle actions
+		if message.parameters[1][:7] == '\x01ACTION':
+			message.parameters[1] = '~ ' + message.prefix.nick + ' ' + message.parameters[1][8:-1] + ' ~'
+			# @ngrfisk you could check for "\x01ACTION is joining a game" or "\x01ACTION is hosting a game"
+			return self.logger.warning(f' * Ignoring action in {message.parameters[0]} from {message.prefix.nick}: {message.parameters[1]}')
+
+		# process privmsg
+		channel = message.parameters[0][1:].lower()
+		sender = message.prefix.nick
+		message = message.parameters[1]
+		snooper = None
+
+		# if user is sending from websnoop, then we could still match avatar
+		if sender == self.snooper:
+			snooper = sender
+			match = re.match(r'^(?P<sender>.*?)>\s(?P<message>.*)$', message)
+			sender = match.group('sender')
+			message = match.group('message')
+
+		# ignore messages from users on ignore list
+		if sender in self.ignore:
+			return logger.warning(f' * Ignored WormNET message from {sender}.')
+
+		await self.forward_message(channel = channel, sender = sender, message = message, snooper = snooper)
