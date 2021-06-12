@@ -26,15 +26,15 @@ class WA_Settings():
 	WA_Discord = {
 		'token': '[discord-token]',
 		'guilds': {
-			'Worms Armageddon': {
-				'gamelist': 'open-games',
+			416225356706480128: { # Worms Armageddon
+				'gamelist': 783363290557579305,
 				'channels': {
-					'anythinggoes': 'anythinggoes',
-					'help': 'help'
+					783002654501634058: 'anythinggoes',
+					783362534451314718: 'help'
 				}
 			},
-			'Worms United': {
-				'gamelist': 'open-games',
+			750008689674682409: { # Worms United
+				'gamelist': 793507434504650773,
 				'channels': {}
 			}
 		}
