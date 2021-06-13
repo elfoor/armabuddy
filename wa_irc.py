@@ -236,4 +236,4 @@ class WA_IRC():
 		if sender in self.ignore:
 			return logger.warning(f' * Ignored WormNET message from {sender}.')
 
-		await self.forward_message(channel = channel, sender = sender, message = message, snooper = snooper)
+		await self.forward_message(irc_channel = channel, sender = sender, message = message, snooper = snooper)
