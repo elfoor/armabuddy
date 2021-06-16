@@ -27,7 +27,7 @@ async def irc_entry_help_handler(connection, message):
         # if parting, always show else only if written in the last {5 minutes
         if (datetime.now() - irc.activity[channel][sender]).total_seconds() <= 5 * 60 or message.command == 'PART':
             message = sender + ' has ' + message.command.lower() + 'ed the channel!'
-            return await discord.send_message(channel=channel, sender=sender, message=message, action=True)
+            return await discord.send_message(irc_channel=channel, sender=sender, message=message, action=True)
         # if not parting or have not written in a while, remove user from activity list
         else:
             return irc.activity[channel].pop(sender, None)
