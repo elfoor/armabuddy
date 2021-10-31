@@ -33,9 +33,6 @@ class WA_Settings():
 					783362534451314718: 'help'
 				}
 			},
-			750008689674682409: { # Worms United
-				'gamelist': 793507434504650773,
-				'channels': {}
+
 			}
 		}
-	}
