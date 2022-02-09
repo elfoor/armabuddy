@@ -8,68 +8,71 @@ from irclib.parser import Message
 from wa_encoder import WA_Encoder
 from wa_settings import WA_Settings
 
+
 class WA_IRC():
 	def __init__(self, *args, **kwargs):
 
-			if not kwargs:
-				raise ValueError('Missing required keyword arguments.')
+		if not kwargs:
+			raise ValueError('Missing required keyword arguments.')
 
-			if not 'username' in kwargs or not isinstance(kwargs['username'], str):
-				raise ValueError('Invalid username.')
+		if not 'username' in kwargs or not isinstance(kwargs['username'], str):
+			raise ValueError('Invalid username.')
 
-			if not 'hostname' in kwargs or not isinstance(kwargs['hostname'], str):
-				raise ValueError('Invalid WormNet server.')
+		if not 'hostname' in kwargs or not isinstance(kwargs['hostname'], str):
+			raise ValueError('Invalid WormNet server.')
 
-			if not 'channels' in kwargs or not isinstance(kwargs['channels'], list):
-				raise ValueError('Invalid WormNet channel list.')
+		if not 'channels' in kwargs or not isinstance(kwargs['channels'], list):
+			raise ValueError('Invalid WormNet channel list.')
 
-			if not 'port' in kwargs or not isinstance(kwargs['port'], int):
-				raise ValueError('Invalid WormNet port.')
+		if not 'port' in kwargs or not isinstance(kwargs['port'], int):
+			raise ValueError('Invalid WormNet port.')
 
-			if not 'loop' in kwargs or (not isinstance(kwargs['loop'], asyncio.SelectorEventLoop) and not isinstance(kwargs['loop'], asyncio.ProactorEventLoop)):
-				raise ValueError('Invalid event loop.')
+		if not 'loop' in kwargs or (
+				not isinstance(kwargs['loop'], asyncio.SelectorEventLoop) and not isinstance(kwargs['loop'],
+				                                                                             asyncio.ProactorEventLoop)):
+			raise ValueError('Invalid event loop.')
 
-			self.logger = logging.getLogger('WA_Logger')
-			self.wormnet = kwargs.pop('hostname')
-			self.nickname = kwargs.pop('username')
-			self.channels = dict(zip(kwargs.get('channels'), [set() for x in kwargs.get('channels')]))
-			self.handlers = dict(zip(kwargs.get('channels'), [{} for x in kwargs.get('channels')]))
-			self.commands = dict(zip(kwargs.get('channels'), [False for x in kwargs.get('channels')]))
-			self.activity = dict(zip(kwargs.get('channels'), [{} for x in kwargs.get('channels')]))
-			self.port = kwargs.pop('port')
-			self.password = kwargs.pop('password', None)
-			self.is_ssl = kwargs.pop('is_ssl', False)
-			self.loop = kwargs.pop('loop')
-			self.transcode = False
-			self.reconnect_delay = 30
-			self.server = Server(self.wormnet, self.port, self.is_ssl, password = self.password)
-			self.reply_message = kwargs.get('reply_message', 'Armabuddy!')
-			self.ignore = kwargs.get('ignore', [])
-			self.snooper = kwargs.get('snooper', 'WebSnoop')
-			self.forward_message = lambda x: x
+		self.logger = logging.getLogger('WA_Logger')
+		self.wormnet = kwargs.pop('hostname')
+		self.nickname = kwargs.pop('username')
+		self.channels = dict(zip(kwargs.get('channels'), [set() for x in kwargs.get('channels')]))
+		self.handlers = dict(zip(kwargs.get('channels'), [{} for x in kwargs.get('channels')]))
+		self.commands = dict(zip(kwargs.get('channels'), [False for x in kwargs.get('channels')]))
+		self.activity = dict(zip(kwargs.get('channels'), [{} for x in kwargs.get('channels')]))
+		self.port = kwargs.pop('port')
+		self.password = kwargs.pop('password', None)
+		self.is_ssl = kwargs.pop('is_ssl', False)
+		self.loop = kwargs.pop('loop')
+		self.transcode = False
+		self.reconnect_delay = 30
+		self.server = Server(self.wormnet, self.port, self.is_ssl, password=self.password)
+		self.reply_message = kwargs.get('reply_message', 'Armabuddy!')
+		self.ignore = kwargs.get('ignore', [])
+		self.snooper = kwargs.get('snooper', 'WebSnoop')
+		self.forward_message = lambda x: x
 
-			# register handlers for every needed internal
-			self.connection = IrcProtocol([self.server], self.nickname, loop=self.loop)
-			self.connection.register_cap('userhost-in-names')
-			self.connection.register('*', self.handle_command)
-			self.connection.register('002', self.decide_transcode)
-			self.connection.register('376', self.join_channels)
-			self.connection.register('JOIN', self.handle_entry)
-			self.connection.register('PART', self.handle_entry)
-			self.connection.register('QUIT', self.handle_entry)
-			self.connection.register('353', self.handle_entry)
+		# register handlers for every needed internal
+		self.connection = IrcProtocol([self.server], self.nickname, loop=self.loop)
+		self.connection.register_cap('userhost-in-names')
+		self.connection.register('*', self.handle_command)
+		self.connection.register('002', self.decide_transcode)
+		self.connection.register('376', self.join_channels)
+		self.connection.register('JOIN', self.handle_entry)
+		self.connection.register('PART', self.handle_entry)
+		self.connection.register('QUIT', self.handle_entry)
+		self.connection.register('353', self.handle_entry)
 
-			# horrrible horrible hack for a horrible horrible library
-			IrcProtocol.connection_lost = __class__.connection_lost
+		# horrrible horrible hack for a horrible horrible library
+		IrcProtocol.connection_lost = __class__.connection_lost
 
 	async def connect(self):
 		# begin connection
 		self.logger.warning(' * Connecting to Wormnet.')
-		if await self.connection._connect(server = self.server):
+		if await self.connection._connect(server=self.server):
 			self.logger.warning(' * Connected to Wormnet.')
 
 		# wait for endo f MOTD to signal proper connection
-		if not await self.connection.wait_for('376', timeout = self.reconnect_delay):
+		if not await self.connection.wait_for('376', timeout=self.reconnect_delay):
 			self.logger.warning(f' ! Unable to connect to properly WormNet, attempting to reconnect.')
 			return await self.connect()
 
@@ -126,13 +129,13 @@ class WA_IRC():
 
 	async def handle_entry(self, conn, message):
 		channel = message.parameters[0][1:].lower()
-		if message.command == 'JOIN': # add user to channel set if joining
+		if message.command == 'JOIN':  # add user to channel set if joining
 			if channel in self.channels:
 				self.channels[channel].add(message.prefix.nick)
-		elif message.command == 'PART': # remove user from channel set if parting
+		elif message.command == 'PART':  # remove user from channel set if parting
 			if channel in self.channels:
 				self.channels[channel].discard(message.prefix.nick)
-		elif message.command == 'QUIT': # remove user from all channel sets if quitting
+		elif message.command == 'QUIT':  # remove user from all channel sets if quitting
 			for channel in self.channels:
 				if self.channels[channel]:
 					self.channels[channel].discard(message.prefix.nick)
@@ -151,9 +154,9 @@ class WA_IRC():
 			self.connection.send(f'JOIN #{channel_name}')
 
 			# give server a few seconds to give us NAMES, if none has been recieved after timeout propagate error
-			result = await self.connection.wait_for('366', timeout = 30)
+			result = await self.connection.wait_for('366', timeout=30)
 			if result == None:
-				raise Exception(f'Never recieved NAMES after joining WormNet channel #{channel}.')
+				raise Exception(f'Never recieved NAMES after joining WormNet channel #{channel_name}.')
 
 	async def send_message(self, guild, origin, channel, message):
 		# strip everything after \n to avoid sneaky user sending multiple commands in single string
@@ -202,7 +205,7 @@ class WA_IRC():
 		# reply to all PM with predefined phrase
 		elif message.parameters[0][0] != '#' and message.command == 'PRIVMSG':
 			self.logger.warning(f' * Recieved PM on WormNET from {message.prefix.nick}: {message.parameters[1]}')
-			return await self.send_private(user = message.prefix.nick, message = self.reply_message)
+			return await self.send_private(user=message.prefix.nick, message=self.reply_message)
 
 	async def default_privmsg_handler(self, connection, message):
 		# lowercase channel / username
@@ -211,13 +214,15 @@ class WA_IRC():
 		# check if channel allows commands
 		if len(message.parameters[1]) and message.parameters[1][0] == '!':
 			if not self.commands[message.parameters[0][1:]]:
-				return self.logger.warning(f' * Ignoring command in {message.parameters[0]} from {message.prefix.nick}: {message.parameters[1]}')
+				return self.logger.warning(
+					f' * Ignoring command in {message.parameters[0]} from {message.prefix.nick}: {message.parameters[1]}')
 
 		# handle actions
 		if message.parameters[1][:7] == '\x01ACTION':
 			message.parameters[1] = '~ ' + message.prefix.nick + ' ' + message.parameters[1][8:-1] + ' ~'
 			# @ngrfisk you could check for "\x01ACTION is joining a game" or "\x01ACTION is hosting a game"
-			return self.logger.warning(f' * Ignoring action in {message.parameters[0]} from {message.prefix.nick}: {message.parameters[1]}')
+			return self.logger.warning(
+				f' * Ignoring action in {message.parameters[0]} from {message.prefix.nick}: {message.parameters[1]}')
 
 		# process privmsg
 		channel = message.parameters[0][1:].lower()
@@ -234,6 +239,6 @@ class WA_IRC():
 
 		# ignore messages from users on ignore list
 		if sender in self.ignore:
-			return logger.warning(f' * Ignored WormNET message from {sender}.')
+			return self.logger.warning(f' * Ignored WormNET message from {sender}.')
 
-		await self.forward_message(irc_channel = channel, sender = sender, message = message, snooper = snooper)
+		await self.forward_message(irc_channel=channel, sender=sender, message=message, snooper=snooper)

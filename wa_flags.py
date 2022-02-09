@@ -6,7 +6,7 @@ WA_Flags = {
 	'4': ':flag_be:',
 	'5': ':flag_br:',
 	'6': ':flag_ca:',
-	'7': ':flag_hr:', # unsure
+	'7': ':flag_hr:',  # unsure
 	'8': ':flag_ba:',
 	'9': ':flag_cy:',
 	'10': ':flag_cz:',
@@ -38,7 +38,7 @@ WA_Flags = {
 	'36': ':flag_no:',
 	'37': ':flag_pl:',
 	'38': ':flag_pt:',
-	#'39': ':checkered_flag:', # unsure
+	# '39': ':checkered_flag:', # unsure
 	'40': ':flag_ro:',
 	'41': ':flag_ru:',
 	'42': ':flag_sg:',
@@ -48,26 +48,26 @@ WA_Flags = {
 	'46': ':flag_ch:',
 	'47': ':flag_tr:',
 	'48': ':flag_us:',
-	#'49': ':checkered_flag:', # unsure
-	#'50': ':checkered_flag:', # unsure
-	#'51': ':checkered_flag:', # unsure
-	#'52': ':checkered_flag:', # unsure
+	# '49': ':checkered_flag:', # unsure
+	# '50': ':checkered_flag:', # unsure
+	# '51': ':checkered_flag:', # unsure
+	# '52': ':checkered_flag:', # unsure
 	'53': ':flag_cl:',
-	#'54': ':checkered_flag:', # unsure
+	# '54': ':checkered_flag:', # unsure
 	'55': ':flag_si:',
 	'56': ':flag_lb:',
-	#'57': ':checkered_flag:', # unsure
+	# '57': ':checkered_flag:', # unsure
 	'58': ':flag_ua:',
 	'59': ':flag_lv:',
 	'60': ':flag_rs:',
-	#'61': ':checkered_flag:', #unsure
+	# '61': ':checkered_flag:', #unsure
 	'62': ':flag_ee:',
 	'63': ':flag_cn:',
 	'64': ':flag_co:',
 	'65': ':flag_ec:',
 	'66': ':flag_uy:',
 	'67': ':flag_ve:',
-	#'68': ':flag_mm:', #unsure
+	# '68': ':flag_mm:', #unsure
 	'69': ':flag_bg:',
 	'70': ':flag_eg:',
 	'71': ':flag_sa:',
