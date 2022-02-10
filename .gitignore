@@ -1,1 +1,8 @@
 .vscode
+/.idea/.gitignore
+/.idea/armabuddy.iml
+/.idea/codeStyles/codeStyleConfig.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/vcs.xml
