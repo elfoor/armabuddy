@@ -26,12 +26,12 @@ class WA_Discord(discord.Client):
 		# embed config
 		self.embed_gamelist_title = 'Currently active games in #anythinggoes'
 		self.embed_color = 0xffa300
-		self.embed_icon = 'https://cdn.discordapp.com/icons/416225356706480128/033384c17dfc13dfc8a5311f52817baa.png'
+		self.embed_icon = 'https://cdn.discordapp.com/emojis/501802399565086720.png?size=32'
 		self.embed_footer = 'List last refreshed at'
 		self.embed_default_flag = ':checkered_flag:'
 		self.embed_public_game = ':unlock:'
 		self.embed_private_game = ':closed_lock_with_key:'
-		self.embed_no_host = '*There are currently no games hosted on WormNet..* <:sadworm:750758902005497857>'
+		self.embed_no_host = '*There are currently no games hosted on WormNet..* <:sadworm:883155422675087452>'
 		self.embed_no_users = '*There are currently no users online on WormNet, something is probably horribly wrong.'
 
 		# static messages

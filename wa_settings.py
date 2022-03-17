@@ -33,6 +33,11 @@ class WA_Settings():
 					783362534451314718: 'help'
 				}
 			},
-
+			763838112198557766: { # TeamWormers
+				'gamelist': 894304280352260138,
+				'channels': {
+          894304244335792178: 'anythinggoes'
+        }
 			}
 		}
+	}
