@@ -162,6 +162,9 @@ class WA_IRC():
         # strip everything after \n to avoid sneaky user sending multiple commands in single string
         message = message.split('\n')[0]
         message = f'PRIVMSG #{channel} :{message}'
+
+        # keep message under 250 characters at least, in reality max length is 512
+        message = (message[:250] + '[...]') if len(message) > 250 else message
         self.logger.warning(f' * Forwarding message from #{origin} on "{guild}" to WormNET #{channel}: {message}')
         await self.transport_write(message)
 
