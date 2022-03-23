@@ -14,7 +14,7 @@ from wa_settings import WA_Settings
 
 def fatal_handler(loop, context):
     exception = context.get('exception')
-    logger.critical(' ! ' + str(exception))
+    logger.critical(f' ! {exception}')
     logger.critical(' ! Encountered FATAL error. Shutting down.\n')
     traceback.print_exception(type(exception), exception, exception.__traceback__)
     loop.stop()
@@ -28,7 +28,7 @@ async def irc_entry_help_handler(connection, message):
     if sender in irc.activity[channel]:
         # if parting, always show else only if written in the last {5 minutes
         if (datetime.now(timezone.utc) - irc.activity[channel][sender]).total_seconds() <= 5 * 60 or message.command == 'PART':
-            message = sender + ' has ' + message.command.lower() + 'ed the channel!'
+            message = f'{sender} has {message.command.lower()}ed the channel!'
             return await discord.send_message(irc_channel=channel, sender=sender, message=message, action=True)
         # if not parting or have not written in a while, remove user from activity list
         else:

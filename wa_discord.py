@@ -83,10 +83,8 @@ class WA_Discord(discord.Client):
                 flag = self.WA_Flags.get(game['country'], self.embed_default_flag)
 
             append += self.embed_private_game if game['private'] == '1' else self.embed_public_game
-            append += discord.utils.escape_markdown(game['title']) + ' \n<wa://' + game['host'] + '?Scheme=Pf,Be&ID=' + \
-                      game['gameid'] + '>\n'
-            append += 'Hosted by: ' + flag + ' ' + \
-                      discord.utils.escape_markdown(game['user']) + '\n\n'
+            append += f'{discord.utils.escape_markdown(game["title"])} \n<wa://{game["host"]}?Scheme=Pf,Be&ID={game["gameid"]}>\n'
+            append += f'Hosted by: {flag} {discord.utils.escape_markdown(game["user"])}\n\n'
 
             # fields cant be longer than 1024 characters, so better make sure we dont surpass limit..
             if len(field) + len(append) >= 1024:
@@ -245,7 +243,7 @@ class WA_Discord(discord.Client):
                 else:
                     users = sorted(users, key=str.lower)
                     field = ''
-                    title = str(len(users)) + ' users online in #' + channel
+                    title = f'{len(users)} users online in #{channel}'
                     for user in users:
                         append = discord.utils.escape_markdown(user) + '\n'
 

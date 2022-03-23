@@ -125,7 +125,7 @@ class WA_IRC():
             self.quit_future.set_result(None)
 
     async def log(self, conn, message):
-        self.logger.info(' * IRC_RAW' + str(message))
+        self.logger.info(f' * IRC_RAW {message}')
 
     async def handle_entry(self, conn, message):
         channel = message.parameters[0][1:].lower()
@@ -219,7 +219,7 @@ class WA_IRC():
 
         # handle actions
         if message.parameters[1][:7] == '\x01ACTION':
-            message.parameters[1] = '~ ' + message.prefix.nick + ' ' + message.parameters[1][8:-1] + ' ~'
+            message.parameters[1] = f'~ {message.prefix.nick} {message.parameters[1][8:-1]} ~'
             # @ngrfisk you could check for "\x01ACTION is joining a game" or "\x01ACTION is hosting a game"
             return self.logger.warning(
                 f' * Ignoring action in {message.parameters[0]} from {message.prefix.nick}: {message.parameters[1]}')
