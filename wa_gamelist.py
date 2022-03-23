@@ -6,16 +6,15 @@ import traceback
 from wa_encoder import WA_Encoder
 
 
-class WA_Gamelist():
+class WA_Gamelist:
     def __init__(self, **kwargs):
-
-        if not 'urls' in kwargs or not isinstance(kwargs['urls'], list):
+        if 'urls' not in kwargs or not isinstance(kwargs['urls'], list):
             raise ValueError('Invalid gamelist.')
 
         if not all(isinstance(url, str) for url in kwargs['urls']):
             raise ValueError('Invalid gamelist URL list.')
 
-        if not 'interval' in kwargs or not isinstance(kwargs['interval'], int):
+        if 'interval' not in kwargs or not isinstance(kwargs['interval'], int):
             raise ValueError('Invalid interval.')
 
         self.logger = logging.getLogger('WA_Logger')
@@ -44,14 +43,13 @@ class WA_Gamelist():
 
     async def fetch(self):
         games = []
-        for list in self.gamelist_urls:
-            self.logger.debug(f' * Fetching gamelist: {list}.')
-            response = await self.session.get(list, headers=self.headers)
+        for url in self.gamelist_urls:
+            self.logger.debug(f' * Fetching gamelist: {url}.')
+            response = await self.session.get(url, headers=self.headers)
             data = await response.read()
             html = WA_Encoder.decode(data)
             for game in self.regexp.finditer(html):
-                game = game.groupdict()
-                games.append(game)
+                games.append(game.groupdict())
 
         self.logger.warning(f' * Aggregated gamelists and found {len(games)} active games.')
         self.games = games

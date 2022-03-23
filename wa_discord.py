@@ -134,9 +134,9 @@ class WA_Discord(discord.Client):
                         'message': {}
                     }
 
-            for id, values in settings['channels'].items():
+            for channel_id, values in settings['channels'].items():
                 if type(values) != dict:
-                    raise Exception(f'Could not find the message forwarding channel with id {id} in guild "{guild.name}".')
+                    raise Exception(f'Could not find the message forwarding channel with id {channel_id} in guild "{guild.name}".')
 
             if settings['gamelist'] and type(settings['gamelist']) != dict:
                 raise Exception(f'Could not find the game list channel with id {settings["gamelist"]} in guild "{guild.name}".')

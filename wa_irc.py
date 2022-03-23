@@ -1,44 +1,41 @@
 import asyncio
 import logging
+import os
 import re
 from datetime import datetime, timezone
 from asyncirc.protocol import IrcProtocol
 from asyncirc.server import Server
 from irclib.parser import Message
 from wa_encoder import WA_Encoder
-from wa_settings import WA_Settings
 
 
-class WA_IRC():
+class WA_IRC:
     def __init__(self, *args, **kwargs):
-
         if not kwargs:
             raise ValueError('Missing required keyword arguments.')
 
-        if not 'username' in kwargs or not isinstance(kwargs['username'], str):
+        if 'username' not in kwargs or not isinstance(kwargs['username'], str):
             raise ValueError('Invalid username.')
 
-        if not 'hostname' in kwargs or not isinstance(kwargs['hostname'], str):
+        if 'hostname' not in kwargs or not isinstance(kwargs['hostname'], str):
             raise ValueError('Invalid WormNET server.')
 
-        if not 'channels' in kwargs or not isinstance(kwargs['channels'], list):
+        if 'channels' not in kwargs or not isinstance(kwargs['channels'], list):
             raise ValueError('Invalid WormNET channel list.')
 
-        if not 'port' in kwargs or not isinstance(kwargs['port'], int):
+        if 'port' not in kwargs or not isinstance(kwargs['port'], int):
             raise ValueError('Invalid WormNET port.')
 
-        if not 'loop' in kwargs or (
-                not isinstance(kwargs['loop'], asyncio.SelectorEventLoop) and not isinstance(kwargs['loop'],
-                                                                                             asyncio.ProactorEventLoop)):
+        if 'loop' not in kwargs or not isinstance(kwargs['loop'], asyncio.ProactorEventLoop if os.name == 'nt' else asyncio.SelectorEventLoop):
             raise ValueError('Invalid event loop.')
 
         self.logger = logging.getLogger('WA_Logger')
         self.wormnet = kwargs.pop('hostname')
         self.nickname = kwargs.pop('username')
-        self.channels = dict(zip(kwargs.get('channels'), [set() for x in kwargs.get('channels')]))
-        self.handlers = dict(zip(kwargs.get('channels'), [{} for x in kwargs.get('channels')]))
-        self.commands = dict(zip(kwargs.get('channels'), [False for x in kwargs.get('channels')]))
-        self.activity = dict(zip(kwargs.get('channels'), [{} for x in kwargs.get('channels')]))
+        self.channels = dict(zip(kwargs.get('channels'), [set() for _ in kwargs.get('channels')]))
+        self.handlers = dict(zip(kwargs.get('channels'), [{} for _ in kwargs.get('channels')]))
+        self.commands = dict(zip(kwargs.get('channels'), [False for _ in kwargs.get('channels')]))
+        self.activity = dict(zip(kwargs.get('channels'), [{} for _ in kwargs.get('channels')]))
         self.port = kwargs.pop('port')
         self.password = kwargs.pop('password', None)
         self.is_ssl = kwargs.pop('is_ssl', False)
@@ -181,7 +178,7 @@ class WA_IRC():
             message = message + '\r\n'
             # W:A client transforms some of the cyrillic characters to latin when typing, in addition to encoding
             message = WA_Encoder.translate(message)
-            message = WA_Encoder.encode(message) if self.transcode == True else message.encode()
+            message = WA_Encoder.encode(message) if self.transcode else message.encode()
             self.connection._transport.write(message)
         else:
             self.logger.warning(' ! Could not forward message due to connection to IRC being down!')
