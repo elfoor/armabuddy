@@ -71,7 +71,7 @@ class WA_IRC():
         if await self.connection._connect(server=self.server):
             self.logger.warning(' * Connected to Wormnet.')
 
-        # wait for endo f MOTD to signal proper connection
+        # wait for end of MOTD to signal proper connection
         if not await self.connection.wait_for('376', timeout=self.reconnect_delay):
             self.logger.warning(f' ! Unable to connect to properly WormNet, attempting to reconnect.')
             return await self.connect()
@@ -140,7 +140,7 @@ class WA_IRC():
                 if self.channels[channel]:
                     self.channels[channel].discard(message.prefix.nick)
         elif message.command == '353':
-            # strip any modes from users, should not be set on WormNet, but will make testing a pain on regular networks
+            # strip any modes from users, should not be set on WormNET, but will make testing a pain on regular networks
             no_modes = message.parameters[3].translate({ord(i): None for i in '@+$%'})
             users = no_modes.split()
             channel = message.parameters[2][1:].lower()
@@ -153,7 +153,7 @@ class WA_IRC():
             self.logger.warning(f' * Joining WormNet channel: #{channel_name}!')
             self.connection.send(f'JOIN #{channel_name}')
 
-            # give server a few seconds to give us NAMES, if none has been recieved after timeout propagate error
+            # give server a few seconds to give us NAMES, if none has been received after timeout propagate error
             result = await self.connection.wait_for('366', timeout=30)
             if result == None:
                 raise Exception(f'Never recieved NAMES after joining WormNet channel #{channel_name}.')
@@ -224,7 +224,7 @@ class WA_IRC():
             return self.logger.warning(
                 f' * Ignoring action in {message.parameters[0]} from {message.prefix.nick}: {message.parameters[1]}')
 
-        # process privmsg
+        # process PRIVMSG
         channel = message.parameters[0][1:].lower()
         sender = message.prefix.nick
         message = message.parameters[1]

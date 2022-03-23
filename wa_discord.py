@@ -1,4 +1,4 @@
-# wadiscord.py
+# wa_discord.py
 import asyncio
 import logging
 import re
@@ -50,7 +50,7 @@ class WA_Discord(discord.Client):
         self.bot_down_message = 'I am sick right now and can\'t show you the game list at this moment.'
         super().__init__(intents=self._intents)
 
-    """ HELPER FUNCTIONS """
+    # HELPER FUNCTIONS #
 
     async def run(self):
         if self.is_closed() and self.is_ready():
@@ -64,7 +64,6 @@ class WA_Discord(discord.Client):
         await self.close()
 
     # create an embed from WA_Gamelist response
-
     async def create_gamelist(self, games: list):
         embed = discord.Embed(title=self.embed_gamelist_title, colour=self.embed_color, timestamp=datetime.now(timezone.utc))
         # embed.set_thumbnail(url=self.embed_icon) # thumbnail does not fit if we want proper list
@@ -86,7 +85,7 @@ class WA_Discord(discord.Client):
             append += f'{discord.utils.escape_markdown(game["title"])} \n<wa://{game["host"]}?Scheme=Pf,Be&ID={game["gameid"]}>\n'
             append += f'Hosted by: {flag} {discord.utils.escape_markdown(game["user"])}\n\n'
 
-            # fields cant be longer than 1024 characters, so better make sure we dont surpass limit..
+            # fields can't be longer than 1024 characters, so better make sure we don't surpass limit..
             if len(field) + len(append) >= 1024:
                 embed.add_field(name="Games", value=field, inline=False)
                 field = ''
@@ -272,7 +271,7 @@ class WA_Discord(discord.Client):
             return self.logger.warning(
                 ' ! Attempted to forward message to Discord before initialization was fully complete.')
 
-        # ignore blank lines, since discord won't let me post a message withonly whitespaces.
+        # ignore blank lines, since discord won't let me post a message with only whitespaces.
         if not message or message.isspace():
             return self.logger.warning(f' * Ignoring blank WormNet message from {sender} in #{irc_channel}.')
 
@@ -316,7 +315,7 @@ class WA_Discord(discord.Client):
                     return channel_info['forward']
         return False
 
-    """ EVENT LISTENERS """
+    # EVENT LISTENERS #
 
     async def on_message(self, message):
         if message.author == self.user or not len(message.clean_content) or message.webhook_id:

@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+
 import asyncio
 import logging
 import traceback
@@ -9,8 +10,7 @@ from wa_gamelist import WA_Gamelist
 from wa_irc import WA_IRC
 from wa_settings import WA_Settings
 
-""" FUNCTIONS """
-
+# FUNCTIONS #
 
 def fatal_handler(loop, context):
     exception = context.get('exception')
@@ -24,9 +24,9 @@ async def irc_entry_help_handler(connection, message):
     sender = message.prefix.nick
     channel = message.parameters[0][1:].lower()
 
-    # only write join / par messages if user has written in #help
+    # only write join / part messages if user has written in #help
     if sender in irc.activity[channel]:
-        # if parting, always show else only if written in the last {5 minutes
+        # if parting, always show, otherwise only if written in the last 5 minutes
         if (datetime.now(timezone.utc) - irc.activity[channel][sender]).total_seconds() <= 5 * 60 or message.command == 'PART':
             message = f'{sender} has {message.command.lower()}ed the channel!'
             return await discord.send_message(irc_channel=channel, sender=sender, message=message, action=True)
@@ -35,30 +35,30 @@ async def irc_entry_help_handler(connection, message):
             return irc.activity[channel].pop(sender, None)
 
 
-""" MAIN """
+# MAIN #
 try:
-    ### LOGGING SETUP ###
+    # LOGGING SETUP #
     logger = logging.getLogger('WA_Logger')
     logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
-    ### ASYNCIO SETUP ###
+    # ASYNCIO SETUP #
     loop = asyncio.get_event_loop()
     loop.set_exception_handler(fatal_handler)
 
-    ### IRC SETUP ###
+    # IRC SETUP #
     irc = WA_IRC(loop=loop, **WA_Settings.WA_IRC)
     loop.create_task(irc.connect())
 
-    ### DISCORD SETUP ###
+    # DISCORD SETUP #
     discord = WA_Discord(**WA_Settings.WA_Discord)
     loop.create_task(discord.update_userlists(irc.channels, interval=7))
     loop.create_task(discord.run())
 
-    ### LIST SETUP ###
+    # LIST SETUP #
     gamelist = WA_Gamelist(**WA_Settings.WA_Gamelist)
     loop.create_task(gamelist.update(discord))
 
-    ### FINAL SETUP ###
+    # FINAL SETUP #
     discord.forward_message = irc.send_message
     irc.forward_message = discord.send_message
     irc.commands['help'] = True
