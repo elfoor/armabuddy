@@ -2,7 +2,7 @@
 import asyncio
 import logging
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 
 import discord
 
@@ -55,8 +55,7 @@ class WA_Discord(discord.Client):
     # create an embed from WA_Gamelist response
 
     async def create_gamelist(self, games: list):
-        embed = discord.Embed(title=self.embed_gamelist_title, colour=self.embed_color,
-                              timestamp=datetime.now() - timedelta(hours=2))
+        embed = discord.Embed(title=self.embed_gamelist_title, colour=self.embed_color, timestamp=datetime.now(timezone.utc))
         # embed.set_thumbnail(url=self.embed_icon) # thumbnail does not fit if we want proper list
         embed.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
         field = ''
@@ -219,7 +218,7 @@ class WA_Discord(discord.Client):
                     ' ! Attempted to update userlist on Discord before initialization was fully complete.')
 
             for channel, users in channels.items():
-                userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now() - timedelta(hours=2))
+                userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now(timezone.utc))
                 userlist.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
 
                 if not users or not len(users):

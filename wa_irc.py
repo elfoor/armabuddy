@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from asyncirc.protocol import IrcProtocol
 from asyncirc.server import Server
 from irclib.parser import Message
@@ -197,7 +197,7 @@ class WA_IRC():
 
             # if user writes in a channel, update activity
             if message.command == 'PRIVMSG':
-                self.activity[channel][message.prefix.nick] = datetime.now()
+                self.activity[channel][message.prefix.nick] = datetime.now(timezone.utc)
 
             if channel in self.channels and message.command in self.handlers[channel]:
                 return await self.handlers[channel][message.command](connection, message)
