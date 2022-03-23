@@ -19,13 +19,13 @@ class WA_IRC():
             raise ValueError('Invalid username.')
 
         if not 'hostname' in kwargs or not isinstance(kwargs['hostname'], str):
-            raise ValueError('Invalid WormNet server.')
+            raise ValueError('Invalid WormNET server.')
 
         if not 'channels' in kwargs or not isinstance(kwargs['channels'], list):
-            raise ValueError('Invalid WormNet channel list.')
+            raise ValueError('Invalid WormNET channel list.')
 
         if not 'port' in kwargs or not isinstance(kwargs['port'], int):
-            raise ValueError('Invalid WormNet port.')
+            raise ValueError('Invalid WormNET port.')
 
         if not 'loop' in kwargs or (
                 not isinstance(kwargs['loop'], asyncio.SelectorEventLoop) and not isinstance(kwargs['loop'],
@@ -46,7 +46,7 @@ class WA_IRC():
         self.transcode = False
         self.reconnect_delay = 30
         self.server = Server(self.wormnet, self.port, self.is_ssl, password=self.password)
-        self.reply_message = kwargs.get('reply_message', 'Armabuddy!')
+        self.reply_message = kwargs.get('reply_message', 'ArmaBuddy!')
         self.ignore = kwargs.get('ignore', [])
         self.snooper = kwargs.get('snooper', 'WebSnoop')
         self.forward_message = lambda x: x
@@ -67,13 +67,13 @@ class WA_IRC():
 
     async def connect(self):
         # begin connection
-        self.logger.warning(' * Connecting to Wormnet.')
+        self.logger.warning(' * Connecting to WormNET.')
         if await self.connection._connect(server=self.server):
-            self.logger.warning(' * Connected to Wormnet.')
+            self.logger.warning(' * Connected to WormNET.')
 
         # wait for end of MOTD to signal proper connection
         if not await self.connection.wait_for('376', timeout=self.reconnect_delay):
-            self.logger.warning(f' ! Unable to connect to properly WormNet, attempting to reconnect.')
+            self.logger.warning(f' ! Unable to connect to properly WormNET, attempting to reconnect.')
             return await self.connect()
 
         # wait until we lose connection
@@ -81,18 +81,18 @@ class WA_IRC():
             await asyncio.sleep(1)
 
         # if connection ha dies, attempt to restart it
-        self.logger.warning(f' ! Disconnected from WormNet, attempting to reconnect in {self.reconnect_delay} seconds.')
+        self.logger.warning(f' ! Disconnected from WormNET, attempting to reconnect in {self.reconnect_delay} seconds.')
         await asyncio.sleep(self.reconnect_delay)
         return await self.connect()
 
     async def decide_transcode(self, conn, message):
         # check if this is the community server, if so, disable transcoding of messages by monkey-patching IrcProtocol.data_received
         if len(message.parameters) >= 2 and 'ae.net.irc.server/WormNET' in message.parameters[1]:
-            self.logger.warning(' * Disabled transcoding for WormNet messages.')
+            self.logger.warning(' * Disabled transcoding for WormNET messages.')
             IrcProtocol.data_received = __class__.transcode_off
             self.transcode = False
         else:
-            self.logger.warning(' * Enabled transcoding for WormNet messages.')
+            self.logger.warning(' * Enabled transcoding for WormNET messages.')
             IrcProtocol.data_received = __class__.transcode_on
             self.transcode = True
 
@@ -150,22 +150,19 @@ class WA_IRC():
     async def join_channels(self, conn, message):
         for channel_name, settings in self.channels.items():
             # create new set containing user list
-            self.logger.warning(f' * Joining WormNet channel: #{channel_name}!')
+            self.logger.warning(f' * Joining WormNET channel: #{channel_name}!')
             self.connection.send(f'JOIN #{channel_name}')
 
             # give server a few seconds to give us NAMES, if none has been received after timeout propagate error
             result = await self.connection.wait_for('366', timeout=30)
-            if result == None:
-                raise Exception(f'Never recieved NAMES after joining WormNet channel #{channel_name}.')
+            if result is None:
+                raise Exception(f'Never received NAMES after joining WormNET channel #{channel_name}.')
 
     async def send_message(self, guild, origin, channel, message):
         # strip everything after \n to avoid sneaky user sending multiple commands in single string
         message = message.split('\n')[0]
         message = f'PRIVMSG #{channel} :{message}'
-
-        # keep message under 250 characters at least, in reality max length is 512
-        message = (message[:250] + '[...]') if len(message) > 250 else message
-        self.logger.warning(f' * Forwarding message from #{origin} on "{guild}" to WormNet #{channel}: {message}')
+        self.logger.warning(f' * Forwarding message from #{origin} on "{guild}" to WormNET #{channel}: {message}')
         await self.transport_write(message)
 
     async def send_private(self, user, message):
@@ -173,7 +170,7 @@ class WA_IRC():
         message = message.split('\n')[0]
         message = f'PRIVMSG {user} :{message}'
 
-        self.logger.warning(f' * Forwarding PM to WormNet user {user}: {message}')
+        self.logger.warning(f' * Forwarding PM to WormNET user {user}: {message}')
         await self.transport_write(message)
 
     async def transport_write(self, message):
@@ -204,7 +201,7 @@ class WA_IRC():
 
         # reply to all PM with predefined phrase
         elif message.parameters[0][0] != '#' and message.command == 'PRIVMSG':
-            self.logger.warning(f' * Recieved PM on WormNET from {message.prefix.nick}: {message.parameters[1]}')
+            self.logger.warning(f' * Received PM on WormNET from {message.prefix.nick}: {message.parameters[1]}')
             return await self.send_private(user=message.prefix.nick, message=self.reply_message)
 
     async def default_privmsg_handler(self, connection, message):
@@ -230,7 +227,7 @@ class WA_IRC():
         message = message.parameters[1]
         snooper = None
 
-        # if user is sending from websnoop, then we could still match avatar
+        # if user is sending from web snoop, then we could still match avatar
         if sender == self.snooper:
             snooper = sender
             match = re.match(r'^(?P<sender>.*?)>\s(?P<message>.*)$', message)

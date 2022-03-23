@@ -35,19 +35,19 @@ class WA_Discord(discord.Client):
         self.forward_message = lambda x: x
 
         # embed config
-        self.embed_gamelist_title = 'Currently active games in #anythinggoes'
+        self.embed_gamelist_title = 'Currently active games in #AnythingGoes'
         self.embed_color = 0xffa300
         self.embed_icon = 'https://cdn.discordapp.com/emojis/501802399565086720.png?size=32'
         self.embed_footer = 'List last refreshed at'
         self.embed_default_flag = self.WA_Flags['49']
         self.embed_public_game = ':unlock:'
         self.embed_private_game = ':closed_lock_with_key:'
-        self.embed_no_host = '*There are currently no games hosted on WormNet..* <:sadworm:883155422675087452>'
-        self.embed_no_users = '*There are currently no users online on WormNet, something is probably horribly wrong.'
+        self.embed_no_host = '*There are currently no games hosted on WormNET..* <:sadworm:883155422675087452>'
+        self.embed_no_users = '*There are currently no users online on WormNET, something is probably horribly wrong.'
 
         # static messages
         self.bot_message_setup = 'I am trying to be a good bot, please bear with me while until I find all the cogs and gears!'
-        self.bot_down_message = 'I am sick right now and can\'t show you the game list at this moment.'
+        self.bot_down_message = "I am sick right now and can't show you the game list at this moment."
         super().__init__(intents=self._intents)
 
     # HELPER FUNCTIONS #
@@ -87,7 +87,7 @@ class WA_Discord(discord.Client):
 
             # fields can't be longer than 1024 characters, so better make sure we don't surpass limit..
             if len(field) + len(append) >= 1024:
-                embed.add_field(name="Games", value=field, inline=False)
+                embed.add_field(name='Games', value=field, inline=False)
                 field = ''
             field += append
 
@@ -95,7 +95,7 @@ class WA_Discord(discord.Client):
         if len(field) <= 0:
             embed.description = self.embed_no_host
         else:
-            embed.add_field(name="Games", value=field, inline=False)
+            embed.add_field(name='Games', value=field, inline=False)
         return embed
 
     # make sure all our configured Guild(s) exist
@@ -136,12 +136,10 @@ class WA_Discord(discord.Client):
 
             for id, values in settings['channels'].items():
                 if type(values) != dict:
-                    raise Exception(
-                        f'Could not find the message forwarding channel with id {id} in guild "{guild.name}".')
+                    raise Exception(f'Could not find the message forwarding channel with id {id} in guild "{guild.name}".')
 
             if settings['gamelist'] and type(settings['gamelist']) != dict:
-                raise Exception(
-                    f'Could not find the game list channel with id {settings["gamelist"]} in guild "{guild.name}".')
+                raise Exception(f'Could not find the game list channel with id {settings["gamelist"]} in guild "{guild.name}".')
 
     # looks for the first pinned message from this bot to use as a game list
     async def check_gamelists(self):
@@ -155,8 +153,7 @@ class WA_Discord(discord.Client):
                         settings['gamelist']['message'] = message
 
                 if not isinstance(settings['gamelist']['message'], discord.Message):
-                    self.logger.warning(
-                        f' ! No pinned game list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
+                    self.logger.warning(f' ! No pinned game list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
                     settings['gamelist']['message'] = await channel.send(self.bot_message_setup)
                     await settings['gamelist']['message'].pin()
                     self.logger.warning(f' * Created and pinned game list in #{channel.name} on "{guild.name}".')
@@ -173,17 +170,14 @@ class WA_Discord(discord.Client):
                 for webhook in await channel.webhooks():
                     if webhook.name == self.user.name:
                         channel_settings['webhook'] = webhook
-                        self.logger.warning(
-                            f' * Found webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
+                        self.logger.warning(f' * Found webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
                         break
 
                 if not channel_settings['webhook']:
-                    self.logger.warning(
-                        f' ! Could not find webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
+                    self.logger.warning(f' ! Could not find webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
                     channel_settings['webhook'] = await channel.create_webhook(name=self.user.name,
                                                                                avatar=await self.user.avatar_url.read())
-                    self.logger.warning(
-                        f' * Created webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
+                    self.logger.warning(f' * Created webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
 
     async def check_userlists(self):
         for settings in self.guild_list.values():
@@ -192,16 +186,14 @@ class WA_Discord(discord.Client):
                 channel = channel_settings['channel']
 
                 if settings['gamelist']['channel'] == channel:
-                    raise Exception(
-                        f'Can\'t have both user list and game list in #{channel.name} on "{guild.name}", check configuration.')
+                    raise Exception(f'Can\'t have both user list and game list in #{channel.name} on "{guild.name}", check configuration.')
 
                 for message in await channel.pins():
                     if message.author == self.user:
                         channel_settings['message'] = message
 
                 if not isinstance(channel_settings['message'], discord.Message):
-                    self.logger.warning(
-                        f' ! No pinned user list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
+                    self.logger.warning(f' ! No pinned user list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
                     channel_settings['message'] = await channel.send(self.bot_message_setup)
                     await channel_settings['message'].pin()
                     self.logger.warning(f' * Created and pinned user list in #{channel.name} on "{guild.name}".')
@@ -213,13 +205,12 @@ class WA_Discord(discord.Client):
 
         # not safe to interact with discord before initialization is complete
         if not self.prepared:
-            return self.logger.warning(
-                ' ! Attempted to forward message to Discord before initialization was fully complete.')
+            return self.logger.warning(' ! Attempted to forward message to Discord before initialization was fully complete.')
 
         for settings in self.guild_list.values():
             guild = settings['guild']
             if settings['gamelist']:
-                channel = settings["gamelist"]["channel"]
+                channel = settings['gamelist']['channel']
                 await settings['gamelist']['message'].edit(**kwargs)
                 self.logger.warning(f' * Updated pinned game list in #{channel.name} on "{guild.name}".')
 
@@ -230,8 +221,7 @@ class WA_Discord(discord.Client):
 
             # not safe to interact with discord before initialization is complete
             if not self.prepared:
-                return self.logger.warning(
-                    ' ! Attempted to update userlist on Discord before initialization was fully complete.')
+                return self.logger.warning(' ! Attempted to update userlist on Discord before initialization was fully complete.')
 
             for channel, users in channels.items():
                 userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now(timezone.utc))
@@ -268,19 +258,18 @@ class WA_Discord(discord.Client):
 
         # not safe to interact with discord before initialization is complete
         if not self.prepared:
-            return self.logger.warning(
-                ' ! Attempted to forward message to Discord before initialization was fully complete.')
+            return self.logger.warning(' ! Attempted to forward message to Discord before initialization was fully complete.')
 
         # ignore blank lines, since discord won't let me post a message with only whitespaces.
         if not message or message.isspace():
-            return self.logger.warning(f' * Ignoring blank WormNet message from {sender} in #{irc_channel}.')
+            return self.logger.warning(f' * Ignoring blank WormNET message from {sender} in #{irc_channel}.')
 
         # strip links due to spam
         message = discord.utils.escape_markdown(message)
-        message = re.sub(r'(https?://\S+)', '<\g<1>>', message, flags=re.MULTILINE)
+        message = re.sub(r'(https?://\S+)', r'<\g<1>>', message, flags=re.MULTILINE)
 
-        # replace @ due to ADOLF-HITLER
-        message = re.sub(r'@', '＠', message, flags=re.MULTILINE)
+        # replace regular @ (COMMERCIAL AT) with ＠ (FULLWIDTH COMMERCIAL AT) homoglyph due to ADOLF-HITLER
+        message = message.replace('@', '\N{FULLWIDTH COMMERCIAL AT}')
 
         # actions need to be italics
         if action:
@@ -295,15 +284,15 @@ class WA_Discord(discord.Client):
 
                     # log type of message, and message contents
                     if origin:
-                        self.logger.warning(
-                            f' * Forwarding message by {sender} on Discord #{origin.name} on "{origin.guild.name}" to #{channel.name} on "{guild.name}": {message}')
+                        self.logger.warning(f' * Forwarding message by {sender} on Discord #{origin.name} on'
+                                            f' "{origin.guild.name}" to #{channel.name} on "{guild.name}": {message}')
                     else:
-                        self.logger.warning(
-                            f' * Forwarding message by {sender} on WormNet #{irc_channel} to #{channel.name} on "{guild.name}": {message}')
+                        self.logger.warning(f' * Forwarding message by {sender} on WormNET #{irc_channel} to '
+                                            f'#{channel.name} on "{guild.name}": {message}')
 
                     # then proceed to find user avatar if possible, and post it using the webhook
                     member = guild.get_member_named(sender)
-                    username = sender if not snooper else sender + f' ({snooper})'
+                    username = sender if not snooper else f'{sender} ({snooper})'
                     avatar_url = member.avatar_url if isinstance(member, discord.Member) else None
                     await channel_settings['webhook'].send(content=message, username=username, avatar_url=avatar_url)
 
