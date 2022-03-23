@@ -60,9 +60,17 @@ class WA_Discord(discord.Client):
         embed.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
         field = ''
         for game in games:
+            append = flag = ''
 
-            append = ''
-            flag = WA_Flags[game['country']] if game['country'] in WA_Flags else self.embed_default_flag
+            if game['packed_flag_id'] != '0':
+                try:  # attempt to unpack ISO 3166-1 alpha-2 country code from LOWORD of last field of game response
+                    flag = f':flag_{(int(game["packed_flag_id"]) & 0xFFFF).to_bytes(2, "little").decode("ascii").lower()}:'
+                except UnicodeDecodeError:
+                    pass
+
+            if not flag:
+                flag = self.WA_Flags.get(game['country'], self.embed_default_flag)
+
             append += self.embed_private_game if game['private'] == '1' else self.embed_public_game
             append += discord.utils.escape_markdown(game['title']) + ' \n<wa://' + game['host'] + '?Scheme=Pf,Be&ID=' + \
                       game['gameid'] + '>\n'

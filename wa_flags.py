@@ -6,7 +6,7 @@ WA_Flags = {
     '4': ':flag_be:',
     '5': ':flag_br:',
     '6': ':flag_ca:',
-    '7': ':flag_hr:',  # unsure
+    '7': ':flag_hr:',
     '8': ':flag_ba:',
     '9': ':flag_cy:',
     '10': ':flag_cz:',
@@ -38,7 +38,7 @@ WA_Flags = {
     '36': ':flag_no:',
     '37': ':flag_pl:',
     '38': ':flag_pt:',
-    # '39': ':checkered_flag:', # unsure
+    '39': ':flag_pr:',
     '40': ':flag_ro:',
     '41': ':flag_ru:',
     '42': ':flag_sg:',
@@ -48,39 +48,5 @@ WA_Flags = {
     '46': ':flag_ch:',
     '47': ':flag_tr:',
     '48': ':flag_us:',
-    # '49': ':checkered_flag:', # unsure
-    # '50': ':checkered_flag:', # unsure
-    # '51': ':checkered_flag:', # unsure
-    # '52': ':checkered_flag:', # unsure
-    '53': ':flag_cl:',
-    # '54': ':checkered_flag:', # unsure
-    '55': ':flag_si:',
-    '56': ':flag_lb:',
-    # '57': ':checkered_flag:', # unsure
-    '58': ':flag_ua:',
-    '59': ':flag_lv:',
-    '60': ':flag_rs:',
-    # '61': ':checkered_flag:', #unsure
-    '62': ':flag_ee:',
-    '63': ':flag_cn:',
-    '64': ':flag_co:',
-    '65': ':flag_ec:',
-    '66': ':flag_uy:',
-    '67': ':flag_ve:',
-    # '68': ':flag_mm:', #unsure
-    '69': ':flag_bg:',
-    '70': ':flag_eg:',
-    '71': ':flag_sa:',
-    '72': ':flag_kr:',
-    '73': ':flag_by:',
-    '74': ':flag_pe:',
-    '75': ':flag_dz:',
-    '76': ':flag_kz:',
-    '77': ':flag_ni:',
-    '78': ':flag_tw:',
-    '79': ':flag_jm:',
-    '80': ':flag_gt:',
-    '81': ':flag_mh:',
-    '82': ':flag_mk:',
-    '83': ':flag_ae'
+    '49': ':checkered_flag:'
 }

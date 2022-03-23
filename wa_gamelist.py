@@ -22,8 +22,18 @@ class WA_Gamelist():
         self.interval = kwargs['interval']
         self.games = []
         self.regexp = re.compile(
-            r'^<GAME\s(?P<title>.*?)[^\S\xA0](?P<user>.*?)\s(?P<host>.*?)\s(?P<country>.*?)\s(?P<unknown_1>.*?)\s(?P<private>.*?)\s(?P<gameid>.*?)\s(?P<unknown_2>.*?)><BR>$',
-            re.MULTILINE)
+            r'^<GAME\s'
+            r'(?P<title>.*?)[^\S\xA0]'
+            r'(?P<user>.*?)\s'
+            r'(?P<host>.*?)\s'
+            r'(?P<country>.*?)\s'
+            r'(?P<unknown_1>.*?)\s'
+            r'(?P<private>.*?)\s'
+            r'(?P<gameid>.*?)\s'
+            r'(?P<packed_flag_id>.*?)'
+            r'><BR>$',
+            re.MULTILINE
+        )
         self.gamelist_urls = kwargs['urls']
         self.session = aiohttp.ClientSession()
         self.headers = {
