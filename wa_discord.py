@@ -18,6 +18,7 @@ class WA_Discord(discord.Client):
 		self.guild_list = {}  # dict that will contain all references to channels and guilds
 		self.logger = logging.getLogger('WA_Logger')
 		self._intents = discord.Intents.default()
+		self._intents.messages = True
 		self._intents.members = True
 		self.prepared = False
 		self.irc_reference = None
