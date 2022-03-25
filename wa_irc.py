@@ -26,7 +26,8 @@ class WA_IRC:
         if 'port' not in kwargs or not isinstance(kwargs['port'], int):
             raise ValueError('Invalid WormNET port.')
 
-        if 'loop' not in kwargs or not isinstance(kwargs['loop'], asyncio.ProactorEventLoop if os.name == 'nt' else asyncio.SelectorEventLoop):
+        if 'loop' not in kwargs or not isinstance(kwargs['loop'],
+                                                  asyncio.ProactorEventLoop if os.name == 'nt' else asyncio.SelectorEventLoop):
             raise ValueError('Invalid event loop.')
 
         self.logger = logging.getLogger('WA_Logger')
@@ -70,7 +71,7 @@ class WA_IRC:
 
         # wait for end of MOTD to signal proper connection
         if not await self.connection.wait_for('376', timeout=self.reconnect_delay):
-            self.logger.warning(f' ! Unable to connect to properly WormNET, attempting to reconnect.')
+            self.logger.warning(' ! Unable to connect to properly WormNET, attempting to reconnect.')
             return await self.connect()
 
         # wait until we lose connection

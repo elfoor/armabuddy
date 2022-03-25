@@ -10,6 +10,7 @@ from wa_gamelist import WA_Gamelist
 from wa_irc import WA_IRC
 from wa_settings import WA_Settings
 
+
 # FUNCTIONS #
 
 def fatal_handler(loop, context):
@@ -27,7 +28,8 @@ async def irc_entry_help_handler(connection, message):
     # only write join / part messages if user has written in #help
     if sender in irc.activity[channel]:
         # if parting, always show, otherwise only if written in the last 5 minutes
-        if (datetime.now(timezone.utc) - irc.activity[channel][sender]).total_seconds() <= 5 * 60 or message.command == 'PART':
+        if (datetime.now(timezone.utc) - irc.activity[channel][
+            sender]).total_seconds() <= 5 * 60 or message.command == 'PART':
             message = f'{sender} has {message.command.lower()}ed the channel!'
             return await discord.send_message(irc_channel=channel, sender=sender, message=message, action=True)
         # if not parting or have not written in a while, remove user from activity list

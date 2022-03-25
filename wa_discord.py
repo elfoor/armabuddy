@@ -9,8 +9,8 @@ import discord
 
 class WA_Discord(discord.Client):
     WA_Flags = {  # https://worms2d.info/WormNET_flags
-         '0': ':flag_gb:',  '1': ':flag_ar:',  '2': ':flag_au:',  '3': ':flag_at:',  '4': ':flag_be:',
-         '5': ':flag_br:',  '6': ':flag_ca:',  '7': ':flag_hr:',  '8': ':flag_ba:',  '9': ':flag_cy:',
+        '0': ':flag_gb:', '1': ':flag_ar:', '2': ':flag_au:', '3': ':flag_at:', '4': ':flag_be:',
+        '5': ':flag_br:', '6': ':flag_ca:', '7': ':flag_hr:', '8': ':flag_ba:', '9': ':flag_cy:',
         '10': ':flag_cz:', '11': ':flag_dk:', '12': ':flag_fi:', '13': ':flag_fr:', '14': ':flag_ge:',
         '15': ':flag_de:', '16': ':flag_gr:', '17': ':flag_hk:', '18': ':flag_hu:', '19': ':flag_is:',
         '20': ':flag_in:', '21': ':flag_id:', '22': ':flag_ir:', '23': ':flag_iq:', '24': ':flag_ie:',
@@ -65,7 +65,8 @@ class WA_Discord(discord.Client):
 
     # create an embed from WA_Gamelist response
     async def create_gamelist(self, games: list):
-        embed = discord.Embed(title=self.embed_gamelist_title, colour=self.embed_color, timestamp=datetime.now(timezone.utc))
+        embed = discord.Embed(title=self.embed_gamelist_title, colour=self.embed_color,
+                              timestamp=datetime.now(timezone.utc))
         # embed.set_thumbnail(url=self.embed_icon) # thumbnail does not fit if we want proper list
         embed.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
         field = ''
@@ -136,10 +137,12 @@ class WA_Discord(discord.Client):
 
             for channel_id, values in settings['channels'].items():
                 if type(values) != dict:
-                    raise Exception(f'Could not find the message forwarding channel with id {channel_id} in guild "{guild.name}".')
+                    raise Exception(
+                        f'Could not find the message forwarding channel with id {channel_id} in guild "{guild.name}".')
 
             if settings['gamelist'] and type(settings['gamelist']) != dict:
-                raise Exception(f'Could not find the game list channel with id {settings["gamelist"]} in guild "{guild.name}".')
+                raise Exception(
+                    f'Could not find the game list channel with id {settings["gamelist"]} in guild "{guild.name}".')
 
     # looks for the first pinned message from this bot to use as a game list
     async def check_gamelists(self):
@@ -153,7 +156,8 @@ class WA_Discord(discord.Client):
                         settings['gamelist']['message'] = message
 
                 if not isinstance(settings['gamelist']['message'], discord.Message):
-                    self.logger.warning(f' ! No pinned game list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
+                    self.logger.warning(
+                        f' ! No pinned game list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
                     settings['gamelist']['message'] = await channel.send(self.bot_message_setup)
                     await settings['gamelist']['message'].pin()
                     self.logger.warning(f' * Created and pinned game list in #{channel.name} on "{guild.name}".')
@@ -170,14 +174,17 @@ class WA_Discord(discord.Client):
                 for webhook in await channel.webhooks():
                     if webhook.name == self.user.name:
                         channel_settings['webhook'] = webhook
-                        self.logger.warning(f' * Found webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
+                        self.logger.warning(
+                            f' * Found webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
                         break
 
                 if not channel_settings['webhook']:
-                    self.logger.warning(f' ! Could not find webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
+                    self.logger.warning(
+                        f' ! Could not find webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
                     channel_settings['webhook'] = await channel.create_webhook(name=self.user.name,
                                                                                avatar=await self.user.avatar_url.read())
-                    self.logger.warning(f' * Created webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
+                    self.logger.warning(
+                        f' * Created webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
 
     async def check_userlists(self):
         for settings in self.guild_list.values():
@@ -186,14 +193,16 @@ class WA_Discord(discord.Client):
                 channel = channel_settings['channel']
 
                 if settings['gamelist']['channel'] == channel:
-                    raise Exception(f'Can\'t have both user list and game list in #{channel.name} on "{guild.name}", check configuration.')
+                    raise Exception(
+                        f'Can\'t have both user list and game list in #{channel.name} on "{guild.name}", check configuration.')
 
                 for message in await channel.pins():
                     if message.author == self.user:
                         channel_settings['message'] = message
 
                 if not isinstance(channel_settings['message'], discord.Message):
-                    self.logger.warning(f' ! No pinned user list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
+                    self.logger.warning(
+                        f' ! No pinned user list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
                     channel_settings['message'] = await channel.send(self.bot_message_setup)
                     await channel_settings['message'].pin()
                     self.logger.warning(f' * Created and pinned user list in #{channel.name} on "{guild.name}".')
@@ -205,7 +214,8 @@ class WA_Discord(discord.Client):
 
         # not safe to interact with discord before initialization is complete
         if not self.prepared:
-            return self.logger.warning(' ! Attempted to forward message to Discord before initialization was fully complete.')
+            return self.logger.warning(
+                ' ! Attempted to forward message to Discord before initialization was fully complete.')
 
         for settings in self.guild_list.values():
             guild = settings['guild']
@@ -221,7 +231,8 @@ class WA_Discord(discord.Client):
 
             # not safe to interact with discord before initialization is complete
             if not self.prepared:
-                return self.logger.warning(' ! Attempted to update userlist on Discord before initialization was fully complete.')
+                return self.logger.warning(
+                    ' ! Attempted to update userlist on Discord before initialization was fully complete.')
 
             for channel, users in channels.items():
                 userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now(timezone.utc))
@@ -258,7 +269,8 @@ class WA_Discord(discord.Client):
 
         # not safe to interact with discord before initialization is complete
         if not self.prepared:
-            return self.logger.warning(' ! Attempted to forward message to Discord before initialization was fully complete.')
+            return self.logger.warning(
+                ' ! Attempted to forward message to Discord before initialization was fully complete.')
 
         # ignore blank lines, since discord won't let me post a message with only whitespaces.
         if not message or message.isspace():
