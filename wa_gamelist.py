@@ -69,6 +69,6 @@ class WA_Gamelist:
                 fail += 1
                 self.logger.warning(f' ! Fetching gamelist has failed {fail} times in a row.')
                 self.logger.warning(f' ! {e}')
-                if fail >= 3:
+                if fail >= 3 :
                     self.logger.warning(' ! Fetching gamelist has failed the maximum allowed times in a row.')
                     raise

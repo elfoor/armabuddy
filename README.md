@@ -12,54 +12,51 @@ Required non-default Python modules:
 ### BOT SETTINGS ###
 Settings is located inside wa_settings.py
 ```py
-class WA_Settings():
-	# GAMELIST
-	WA_Gamelist = {
-		# how often to update gamelists
-		'interval': 15,
-		# which urls to fetch gamelist from
-		'urls': [
-			'http://wormnet1.team17.com/wormageddonweb/GameList.asp?Channel=AnythingGoes',
-			'http://wormnet.net/wormageddonweb/GameList.asp?Channel=AnythingGoes'
-		]
-	}
+сlass WA_Settings():
+    # GAMELIST
+    WA_Gamelist = {
+        'interval': 15,  # WormNET game list query interval in seconds.
+        'urls': [
+            'http://wormnet1.team17.com/wormageddonweb/GameList.asp?Channel=AnythingGoes',  # T17 WormNET
+            'http://wormnet.net/wormageddonweb/GameList.asp?Channel=AnythingGoes'  # Community server
+        ]
+    }
 
-	WA_IRC = {
-		'hostname': 'wormnet1.team17.com',
-		'port': 6667,
-		'username': 'Discord',
-		'password': 'ELSILRACLIHP',
-		# messages originating from this user will be handled as if coming from original sender
-		'snooper': 'WebSnoop',
-		# message sent if recieving a PM
-		'reply_message': 'This is a bot. I forward messages between Discord and WormNet. Feel free to join https://discord.gg/UBRBhk6 to meet all other wormers on discord!',
-		# channels to join on wormnet
-		'channels': ['anythinggoes', 'help'],
-		# users to ignore
-		'ignore': [
-			'WormsLeague', # spammer
-			'CorujaBOT'    # League spammer
-		]
-	}
+    WA_IRC = {
+        'hostname': 'wormnet1.team17.com',
+        'port': 6667,
+        'username': 'Discord',
+        'password': 'PHILCARLISLE'[::-1],
+        'snooper': 'WebSnoop',
+        'reply_message': 'This is a bot. I forward messages between Discord and WormNet. Feel free to'
+                         ' join https://discord.gg/UBRBhk6 to meet all other wormers on discord!',
+        'channels': ['anythinggoes', 'help'],
+        'ignore': [  # WormNAT usernames who's messages should not be forwarded to discord
+            'WormsLeague',  # Spammer
+            'CorujaBOT'     # League spammer
+        ]
+    }
 
-	# DISCORD
-	WA_Discord = {
-		'token': '[discord-token]',
-		'guilds': {
-			# discord guild name
-			'Worms Armageddon': {
-				# channel to put game list inside
-				'gamelist': 'open-games',
-				# channels to enable forwarding between. discord channel -> irc channel
-				'channels': {
-					'anythinggoes': 'anythinggoes',
-					'help': 'help'
-				}
-			},
-			'Worms United': {
-				'gamelist': 'open-games',
-				'channels': {}
-			}
-		}
-	}
+    # DISCORD
+    WA_Discord = {
+        'token': '[discord-token]',
+        'guilds': {
+            # Worms Armageddon (formally Dōjō)
+            416225356706480128: {  # Discord Server ID
+                'gamelist': 783363290557579305,  # Discord channel ID to add the game list embed to
+                'channels': {
+                    783002654501634058: 'anythinggoes',  # Discord channel ID that will mirror WormNAT AnythingGoes channel
+                    783362534451314718: 'help'  # Discord channel ID that will mirror WormNAT Help channel
+                }
+            },
+            # TeamWormers
+            763838112198557766: {
+                'gamelist': 894304280352260138,
+                'channels': {
+                    894304244335792178: 'anythinggoes'
+                }
+            }
+        }
+    }
+
 ```
