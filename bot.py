@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from wa_discord import WA_Discord
 from wa_gamelist import WA_Gamelist
@@ -27,9 +27,9 @@ async def irc_entry_help_handler(connection, message):
 
     # only write join / part messages if user has written in #help
     if sender in irc.activity[channel]:
+        time_since_activity = datetime.now(timezone.utc) - irc.activity[channel][sender]
         # if parting, always show, otherwise only if written in the last 5 minutes
-        if (datetime.now(timezone.utc) - irc.activity[channel][
-            sender]).total_seconds() <= 5 * 60 or message.command == 'PART':
+        if message.command == 'PART' or time_since_activity < timedelta(minutes=5):
             message = f'{sender} has {message.command.lower()}ed the channel!'
             return await discord.send_message(irc_channel=channel, sender=sender, message=message, action=True)
         # if not parting or have not written in a while, remove user from activity list
