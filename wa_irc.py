@@ -40,14 +40,14 @@ class WA_IRC:
         self.connection = IrcProtocol([self.server], self.nickname, loop=self.loop)
         self.connection.register_cap('userhost-in-names')
         self.connection.register('*', self.handle_command)
-        self.connection.register('002', self.decide_transcode)
-        self.connection.register('376', self.join_channels)
+        self.connection.register('002', self.decide_transcode)  # Server name and version
+        self.connection.register('376', self.join_channels)  # End of MOTD
         self.connection.register('JOIN', self.handle_entry)
         self.connection.register('PART', self.handle_entry)
         self.connection.register('QUIT', self.handle_entry)
-        self.connection.register('353', self.handle_entry)
+        self.connection.register('353', self.handle_entry)  # NAMES reply, lists client name and status for channel
 
-        # horrrible horrible hack for a horrible horrible library
+        # horrible horrible hack for a horrible horrible library
         IrcProtocol.connection_lost = __class__.connection_lost
 
     async def connect(self):
@@ -65,7 +65,7 @@ class WA_IRC:
         while self.connection._connected:
             await asyncio.sleep(1)
 
-        # if connection ha dies, attempt to restart it
+        # if connection has died, attempt to restart it
         self.logger.warning(f' ! Disconnected from WormNET, attempting to reconnect in {self.reconnect_delay} seconds.')
         await asyncio.sleep(self.reconnect_delay)
         return await self.connect()
@@ -172,6 +172,11 @@ class WA_IRC:
             self.logger.warning(' ! Could not forward message due to connection to IRC being down!')
 
     async def handle_command(self, connection, message):
+        if message.command == '432':
+            raise Exception('Requested nickname contains invalid characters')
+        if message.command == '433':
+            raise Exception('Requested nickname is already in use')
+
         # ignore commands triggered by self
         if message.prefix.nick == self.nickname:
             return
