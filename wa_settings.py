@@ -17,7 +17,7 @@ class WA_Settings():
         'reply_message': 'This is a bot. I forward messages between Discord and WormNet. Feel free to'
                          ' join https://discord.gg/UBRBhk6 to meet all other wormers on discord!',
         'channels': ['anythinggoes', 'help'],
-        'ignore': [  # WormNAT usernames who's messages should not be forwarded to discord
+        'ignore': [  # WormNET usernames who's messages should not be forwarded to discord
             'WormsLeague',  # Spammer
             'CorujaBOT'     # League spammer
         ]
@@ -31,8 +31,8 @@ class WA_Settings():
             416225356706480128: {  # Discord Server ID
                 'gamelist': 783363290557579305,  # Discord channel ID to add the game list embed to
                 'channels': {
-                    783002654501634058: 'anythinggoes',  # Discord channel ID that will mirror WormNAT AnythingGoes channel
-                    783362534451314718: 'help'  # Discord channel ID that will mirror WormNAT Help channel
+                    783002654501634058: 'anythinggoes',  # Discord channel ID that will mirror WormNET AnythingGoes channel
+                    783362534451314718: 'help'  # Discord channel ID that will mirror WormNET Help channel
                 }
             },
             # TeamWormers
