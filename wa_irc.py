@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 import re
 from datetime import datetime, timezone
 from asyncirc.protocol import IrcProtocol
@@ -11,24 +10,12 @@ from wa_encoder import WA_Encoder
 
 class WA_IRC:
     def __init__(self, *args, **kwargs):
-        if not kwargs:
-            raise ValueError('Missing required keyword arguments.')
-
-        if 'username' not in kwargs or not isinstance(kwargs['username'], str):
-            raise ValueError('Invalid username.')
-
-        if 'hostname' not in kwargs or not isinstance(kwargs['hostname'], str):
-            raise ValueError('Invalid WormNET server.')
-
-        if 'channels' not in kwargs or not isinstance(kwargs['channels'], list):
-            raise ValueError('Invalid WormNET channel list.')
-
-        if 'port' not in kwargs or not isinstance(kwargs['port'], int):
-            raise ValueError('Invalid WormNET port.')
-
-        if 'loop' not in kwargs or not isinstance(kwargs['loop'],
-                                                  asyncio.ProactorEventLoop if os.name == 'nt' else asyncio.SelectorEventLoop):
-            raise ValueError('Invalid event loop.')
+        assert kwargs, 'Missing required keyword arguments.'
+        assert isinstance(kwargs.get('username'), str), 'Invalid username.'
+        assert isinstance(kwargs.get('hostname'), str), 'Invalid WormNET server.'
+        assert isinstance(kwargs.get('channels'), list), 'Invalid WormNET channel list.'
+        assert isinstance(kwargs.get('port'), int), 'Invalid WormNET port.'
+        assert isinstance(kwargs.get('loop'), asyncio.AbstractEventLoop), 'Invalid event loop.'
 
         self.logger = logging.getLogger('WA_Logger')
         self.wormnet = kwargs.pop('hostname')

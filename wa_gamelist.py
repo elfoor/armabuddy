@@ -8,14 +8,9 @@ from wa_encoder import WA_Encoder
 
 class WA_Gamelist:
     def __init__(self, **kwargs):
-        if 'urls' not in kwargs or not isinstance(kwargs['urls'], list):
-            raise ValueError('Invalid gamelist.')
-
-        if not all(isinstance(url, str) for url in kwargs['urls']):
-            raise ValueError('Invalid gamelist URL list.')
-
-        if 'interval' not in kwargs or not isinstance(kwargs['interval'], int):
-            raise ValueError('Invalid interval.')
+        assert isinstance(kwargs.get('urls'), list), 'Invalid gamelist'
+        assert all(isinstance(url, str) for url in kwargs['urls']), 'Invalid gamelist URL list.'
+        assert isinstance(kwargs.get('interval'), int), 'Invalid interval.'
 
         self.logger = logging.getLogger('WA_Logger')
         self.interval = kwargs['interval']
