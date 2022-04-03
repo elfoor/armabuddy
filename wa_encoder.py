@@ -1,5 +1,5 @@
 class WA_Encoder:
-    intab = bytes(i for i in range(256))
+    intab = bytes(range(256))
     outtab = (  # https://worms2d.info/WA_character_table
         '\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F'
         '"&\'<>\\\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'  # T17 WormNET translates "&'<>\ to 0x10-0x15 for game names
