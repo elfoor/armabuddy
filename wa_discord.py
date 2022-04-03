@@ -5,6 +5,7 @@ import re
 from datetime import datetime, timezone
 
 import discord
+discord.VoiceClient.warn_nacl = False
 
 
 class WA_Discord(discord.Client):
