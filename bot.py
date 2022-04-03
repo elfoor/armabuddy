@@ -72,5 +72,8 @@ try:
     irc.handlers['anythinggoes']['PRIVMSG'] = irc.default_privmsg_handler
 
     loop.run_forever()  # this works, NICE!
+except KeyboardInterrupt:
+    logger.critical(' ! Encountered KbdInterrupt. Shutting down.\n')
+    loop.stop()
 except Exception as e:
     print(e)
