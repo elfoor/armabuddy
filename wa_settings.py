@@ -40,6 +40,7 @@ class WA_Settings():
                 'gamelist': 894304280352260138,
                 'channels': {
                     894304244335792178: 'anythinggoes'
+                    968734941368176711: 'help'
                 }
             }
         }
