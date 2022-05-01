@@ -277,12 +277,13 @@ class WA_Discord(discord.Client):
         if not message or message.isspace():
             return self.logger.warning(f' * Ignoring blank WormNET message from {sender} in #{irc_channel}.')
 
-        # strip links due to spam
+        # escape discord mentions and markdown
+        message = discord.utils.escape_mentions(message)
         message = discord.utils.escape_markdown(message)
-        message = re.sub(r'(https?://\S+)', r'<\g<1>>', message, flags=re.MULTILINE)
 
-        # replace regular @ (COMMERCIAL AT) with ＠ (FULLWIDTH COMMERCIAL AT) homoglyph due to ADOLF-HITLER
-        message = message.replace('@', '\N{FULLWIDTH COMMERCIAL AT}')
+        # suppress discord invite links with http strip + `` wrap, suppress other links with <> wrap
+        message = re.sub(r'https?://(discord.gg/\S+)', r'`\g<1>`', message, flags=re.MULTILINE | re.IGNORECASE)
+        message = re.sub(r'(https?://\S+)', r'<\g<1>>', message, flags=re.MULTILINE | re.IGNORECASE)
 
         # actions need to be italics
         if action:
