@@ -53,7 +53,8 @@ Settings is located inside wa_settings.py
             763838112198557766: {
                 'gamelist': 894304280352260138,
                 'channels': {
-                    894304244335792178: 'anythinggoes'
+                    894304244335792178: 'anythinggoes',
+                    968734941368176711: 'help'
                 }
             }
         }
