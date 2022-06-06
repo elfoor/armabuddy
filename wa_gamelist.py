@@ -15,15 +15,15 @@ class WA_Gamelist:
         self.logger = logging.getLogger('WA_Logger')
         self.interval = kwargs['interval']
         self.games = []
-        self.regexp = re.compile(
-            r'^<GAME\s'
-            r'(?P<title>.*?)[^\S\xA0]'
-            r'(?P<user>.*?)\s'
-            r'(?P<host>.*?)\s'
-            r'(?P<country>.*?)\s'
-            r'(?P<unknown_1>.*?)\s'
-            r'(?P<private>.*?)\s'
-            r'(?P<gameid>.*?)\s'
+        self.regexp = re.compile(  # Fields are space separated, user provided spaces get converted to \xA0 (NBSP)
+            r'^<GAME\x20'
+            r'(?P<title>.*?)\x20'
+            r'(?P<user>.*?)\x20'
+            r'(?P<host>.*?)\x20'
+            r'(?P<country>.*?)\x20'
+            r'(?P<unknown_1>.*?)\x20'
+            r'(?P<private>.*?)\x20'
+            r'(?P<gameid>.*?)\x20'
             r'(?P<packed_flag_id>.*?)'
             r'><BR>$',
             re.MULTILINE

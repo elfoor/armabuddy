@@ -6,22 +6,9 @@ from datetime import datetime, timezone
 
 import discord
 discord.VoiceClient.warn_nacl = False
-
+from wa_flags import WA_Flags
 
 class WA_Discord(discord.Client):
-    WA_Flags = {  # https://worms2d.info/WormNET_flags
-        '0': ':flag_gb:', '1': ':flag_ar:', '2': ':flag_au:', '3': ':flag_at:', '4': ':flag_be:',
-        '5': ':flag_br:', '6': ':flag_ca:', '7': ':flag_hr:', '8': ':flag_ba:', '9': ':flag_cy:',
-        '10': ':flag_cz:', '11': ':flag_dk:', '12': ':flag_fi:', '13': ':flag_fr:', '14': ':flag_ge:',
-        '15': ':flag_de:', '16': ':flag_gr:', '17': ':flag_hk:', '18': ':flag_hu:', '19': ':flag_is:',
-        '20': ':flag_in:', '21': ':flag_id:', '22': ':flag_ir:', '23': ':flag_iq:', '24': ':flag_ie:',
-        '25': ':flag_il:', '26': ':flag_it:', '27': ':flag_jp:', '28': ':flag_li:', '29': ':flag_lu:',
-        '30': ':flag_my:', '31': ':flag_mt:', '32': ':flag_mx:', '33': ':flag_ma:', '34': ':flag_nl:',
-        '35': ':flag_nz:', '36': ':flag_no:', '37': ':flag_pl:', '38': ':flag_pt:', '39': ':flag_pr:',
-        '40': ':flag_ro:', '41': ':flag_ru:', '42': ':flag_sg:', '43': ':flag_za:', '44': ':flag_es:',
-        '45': ':flag_se:', '46': ':flag_ch:', '47': ':flag_tr:', '48': ':flag_us:', '49': ':triangular_flag_on_post:'
-    }
-
     def __init__(self, token: str, guilds: dict):
         # internal properties
         self.token = token  # discord token used for authenticating bot
@@ -40,7 +27,7 @@ class WA_Discord(discord.Client):
         self.embed_color = 0xffa300
         self.embed_icon = 'https://cdn.discordapp.com/emojis/501802399565086720.png?size=32'
         self.embed_footer = 'List last refreshed at'
-        self.embed_default_flag = self.WA_Flags['49']
+        self.embed_default_flag = WA_Flags['49']
         self.embed_public_game = ':unlock:'
         self.embed_private_game = ':closed_lock_with_key:'
         self.embed_no_host = '*There are currently no games hosted on WormNET..* <:sadworm:883155422675087452>'
@@ -75,13 +62,13 @@ class WA_Discord(discord.Client):
             append = flag = ''
 
             if game['packed_flag_id'] != '0':
-                try:  # attempt to unpack ISO 3166-1 alpha-2 country code from LOWORD of last field of game response
-                    flag = f':flag_{(int(game["packed_flag_id"]) & 0xFFFF).to_bytes(2, "little").decode("ascii").lower()}:'
-                except UnicodeDecodeError:
-                    pass
+                # attempt to unpack ISO 3166-1 alpha-2 country code from LOWORD of last field of game response
+                flag_bytes = (int(game['packed_flag_id']) & 0xFFFF).to_bytes(2, 'little')
+                if all(ord('A') <= char <= ord('Z') for char in flag_bytes):
+                    flag = f':flag_{flag_bytes.decode("ascii").lower()}:'
 
             if not flag:
-                flag = self.WA_Flags.get(game['country'], self.embed_default_flag)
+                flag = WA_Flags.get(game['country'], self.embed_default_flag)
 
             append += self.embed_private_game if game['private'] == '1' else self.embed_public_game
             append += f'{discord.utils.escape_markdown(game["title"])} \n<wa://{game["host"]}?Scheme=Pf,Be&ID={game["gameid"]}>\n'
