@@ -9,7 +9,7 @@ WA_Flags = {  # https://worms2d.info/WormNET_flags
     '7': ':flag_hr:',   # Croatia
     '8': ':flag_ba:',   # Bosnia
     '9': ':flag_cy:',   # Cyprus
-    '10': ':flag_cz:',  # Czech
+    '10': ':flag_cz:',  # Czech Republic
     '11': ':flag_dk:',  # Denmark
     '12': ':flag_fi:',  # Finland
     '13': ':flag_fr:',  # France
