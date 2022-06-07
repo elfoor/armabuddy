@@ -35,12 +35,12 @@ class WA_Settings():
                     783362534451314718: 'help'  # Discord channel ID that will mirror WormNET Help channel
                 }
             },
-            # TeamWormers
-            763838112198557766: {
-                'gamelist': 894304280352260138,
+            # TeamWormers take 2
+            918454442079178813: {
+                'gamelist': 918454442800607247,
                 'channels': {
-                    894304244335792178: 'anythinggoes',
-                    968734941368176711: 'help'
+                    918454442800607246: 'anythinggoes',
+                    983773668041703464: 'help'
                 }
             }
         }
