@@ -12,7 +12,7 @@ Required non-default Python modules:
 ### BOT SETTINGS ###
 Settings is located inside wa_settings.py
 ```py
-сlass WA_Settings():
+сlass WA_Settings:
     # GAMELIST
     WA_Gamelist = {
         'interval': 15,  # WormNET game list query interval in seconds.
@@ -31,7 +31,7 @@ Settings is located inside wa_settings.py
         'reply_message': 'This is a bot. I forward messages between Discord and WormNet. Feel free to'
                          ' join https://discord.gg/UBRBhk6 to meet all other wormers on discord!',
         'channels': ['anythinggoes', 'help'],
-        'ignore': [  # WormNAT usernames who's messages should not be forwarded to discord
+        'ignore': [  # WormNAT usernames whose messages should not be forwarded to discord
             'WormsLeague',  # Spammer
             'CorujaBOT'     # League spammer
         ]
@@ -59,5 +59,4 @@ Settings is located inside wa_settings.py
             }
         }
     }
-
 ```
