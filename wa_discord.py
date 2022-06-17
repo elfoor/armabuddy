@@ -4,9 +4,10 @@ import logging
 import re
 from datetime import datetime, timezone
 
+from wa_flags import WA_Flags
 import discord
 discord.VoiceClient.warn_nacl = False
-from wa_flags import WA_Flags
+
 
 class WA_Discord(discord.Client):
     def __init__(self, token: str, guilds: dict):
@@ -36,6 +37,18 @@ class WA_Discord(discord.Client):
         # static messages
         self.bot_message_setup = 'I am trying to be a good bot, please bear with me while until I find all the cogs and gears!'
         self.bot_down_message = "I am sick right now and can't show you the game list at this moment."
+
+        self.required_permissions = (
+            'read_messages',  # view_channel, must be checked first
+            'read_message_history',  # to find pinned messages
+            'send_messages',  # to get discord.py to test for embed_links permission properly, must be above embed_links
+            'embed_links',  # to add self.embed_icon image link
+            'manage_webhooks'
+        )
+        self.required_setup_permissions = (  # only needed once when setting up initial pinned messages
+            'send_messages',  # to create initial messages
+            'manage_messages'  # to pin initial messages
+        )
         super().__init__(intents=self._intents)
 
     # HELPER FUNCTIONS #
@@ -99,15 +112,27 @@ class WA_Discord(discord.Client):
                     'gamelist': self.settings[guild.id]['gamelist']
                 }
             else:
-                raise Exception(f'Could not find guild "{guild.name}" in settings.')
+                self.logger.warning(f' ! Could not find guild "{guild.name}" in settings.')
 
-    # make sure all Guild(s) have the TextChannel(s) we have set up
+    async def check_permission_missing(self, channel, guild, required_permissions):
+        for permission_name, permission_active in channel.permissions_for(guild.me):
+            if permission_name in required_permissions and not permission_active:
+                self.logger.warning(f' ! Missing "{permission_name}" permission for "#{channel.name}"'
+                                    f' in guild "{guild.name}"! Skipping channel.')
+                return True
+        return False
+
+    # make sure all Guild(s) have the TextChannel(s) we have set up, with correct permissions, skip channels that don't
     async def check_channels(self):
         # for every guild we have setup
         for settings in self.guild_list.values():
             guild = settings['guild']
             for channel in guild.text_channels:
                 if channel.id in settings['channels']:
+                    if await self.check_permission_missing(channel, guild, self.required_permissions):
+                        del settings['channels'][channel.id]
+                        continue
+
                     self.logger.warning(f' * Found message forwarding channel #{channel.name} in guild "{guild.name}"!')
                     settings['channels'][channel.id] = {
                         'channel': channel,
@@ -117,20 +142,26 @@ class WA_Discord(discord.Client):
                     }
 
                 if settings['gamelist'] and channel.id == settings['gamelist']:
+                    if await self.check_permission_missing(channel, guild, self.required_permissions):
+                        settings['gamelist'] = 0
+                        continue
+
                     self.logger.warning(f' * Found game list channel #{channel.name} in guild "{guild.name}"!')
                     settings['gamelist'] = {
                         'channel': channel,
                         'message': {}
                     }
 
-            for channel_id, values in settings['channels'].items():
+            for channel_id, values in list(settings['channels'].items()):
                 if type(values) != dict:
-                    raise Exception(
-                        f'Could not find the message forwarding channel with id {channel_id} in guild "{guild.name}".')
+                    self.logger.warning(f' ! Could not find the message forwarding channel with id {channel_id}'
+                                        f' in guild "{guild.name}". Skipping channel.')
+                    del settings['channels'][channel_id]
 
             if settings['gamelist'] and type(settings['gamelist']) != dict:
-                raise Exception(
-                    f'Could not find the game list channel with id {settings["gamelist"]} in guild "{guild.name}".')
+                self.logger.warning(f' ! Could not find the game list channel with id {settings["gamelist"]}'
+                                    f' in guild "{guild.name}". Skipping channel.')
+                settings['gamelist'] = 0
 
     # looks for the first pinned message from this bot to use as a game list
     async def check_gamelists(self):
@@ -144,6 +175,10 @@ class WA_Discord(discord.Client):
                         settings['gamelist']['message'] = message
 
                 if not isinstance(settings['gamelist']['message'], discord.Message):
+                    if await self.check_permission_missing(channel, guild, self.required_setup_permissions):
+                        settings['gamelist'] = 0
+                        continue
+
                     self.logger.warning(
                         f' ! No pinned game list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
                     settings['gamelist']['message'] = await channel.send(self.bot_message_setup)
@@ -177,21 +212,25 @@ class WA_Discord(discord.Client):
     async def check_userlists(self):
         for settings in self.guild_list.values():
             guild = settings['guild']
-            for channel_settings in settings['channels'].values():
+            for channel_settings in list(settings['channels'].values()):
                 channel = channel_settings['channel']
 
-                if settings['gamelist']['channel'] == channel:
-                    raise Exception(
-                        f'Can\'t have both user list and game list in #{channel.name} on "{guild.name}", check configuration.')
+                if settings['gamelist'] and settings['gamelist']['channel'] == channel:
+                    raise Exception(f'Can\'t have both user list and game list in #{channel.name} on'
+                                    f' "{guild.name}", check configuration.')
 
                 for message in await channel.pins():
                     if message.author == self.user:
-                        channel_settings['message'] = message
+                        settings['channels'][channel.id]['message'] = message
 
                 if not isinstance(channel_settings['message'], discord.Message):
-                    self.logger.warning(
-                        f' ! No pinned user list belonging to "{self.user.name}" in #{channel.name} on "{guild.name}".')
-                    channel_settings['message'] = await channel.send(self.bot_message_setup)
+                    if await self.check_permission_missing(channel, guild, self.required_setup_permissions):
+                        del settings['channels'][channel.id]
+                        continue
+
+                    self.logger.warning(f' ! No pinned user list belonging to "{self.user.name}"'
+                                        f' in #{channel.name} on "{guild.name}".')
+                    settings['channels'][channel.id]['message'] = await channel.send(self.bot_message_setup)
                     await channel_settings['message'].pin()
                     self.logger.warning(f' * Created and pinned user list in #{channel.name} on "{guild.name}".')
                 else:
@@ -199,11 +238,9 @@ class WA_Discord(discord.Client):
 
     # edits pinned message containing game lists
     async def update_gamelists(self, **kwargs):
-
-        # not safe to interact with discord before initialization is complete
-        if not self.prepared:
-            return self.logger.warning(
-                ' ! Attempted to forward message to Discord before initialization was fully complete.')
+        if not self.prepared:  # not safe to interact with discord before initialization is complete
+            return self.logger.warning(' ! Attempted to forward message to Discord before initialization'
+                                       ' was fully complete.')
 
         for settings in self.guild_list.values():
             guild = settings['guild']
@@ -219,8 +256,8 @@ class WA_Discord(discord.Client):
 
             # not safe to interact with discord before initialization is complete
             if not self.prepared:
-                return self.logger.warning(
-                    ' ! Attempted to update userlist on Discord before initialization was fully complete.')
+                return self.logger.warning(' ! Attempted to update userlist on Discord before initialization'
+                                           ' was fully complete.')
 
             for channel, users in channels.items():
                 userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now(timezone.utc))
@@ -257,8 +294,8 @@ class WA_Discord(discord.Client):
 
         # not safe to interact with discord before initialization is complete
         if not self.prepared:
-            return self.logger.warning(
-                ' ! Attempted to forward message to Discord before initialization was fully complete.')
+            return self.logger.warning(' ! Attempted to forward message to Discord before'
+                                       ' initialization was fully complete.')
 
         # ignore blank lines, since discord won't let me post a message with only whitespaces.
         if not message or message.isspace():
@@ -268,7 +305,7 @@ class WA_Discord(discord.Client):
         message = discord.utils.escape_mentions(message)
         message = discord.utils.escape_markdown(message)
 
-        # suppress discord invite links with http strip + `` wrap, suppress other links with <> wrap
+        # suppress invite links with http strip + `` wrap (discord mobile workaround), suppress other links with <> wrap
         message = re.sub(r'https?://(discord.gg/\S+)', r'`\g<1>`', message, flags=re.MULTILINE | re.IGNORECASE)
         message = re.sub(r'(https?://\S+)', r'<\g<1>>', message, flags=re.MULTILINE | re.IGNORECASE)
 
@@ -341,6 +378,16 @@ class WA_Discord(discord.Client):
         await self.check_gamelists()
         await self.check_userlists()
         await self.check_webhooks()
+
+        for settings in list(self.guild_list.values()):
+            guild = settings['guild']
+            if not settings['channels'] and not settings['gamelist']:
+                self.logger.warning(f' ! No channels setup for guild {guild.name}! Skipping guild.')
+                del self.guild_list[guild.id]
+
+        if not self.guild_list:
+            raise Exception('No guilds configured!')
+
         self.prepared = True
         self.logger.warning(f' * {self.user.name} has been fully initialized!')
 
