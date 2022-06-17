@@ -142,6 +142,8 @@ class WA_IRC:
             result = await self.connection.wait_for('366', timeout=30)
             if result is None:
                 raise Exception(f'Never received NAMES after joining WormNET channel #{channel_name}.')
+            else:
+                self.logger.warning(f' * Successfully joined WormNET channel: #{channel_name}!')
 
     async def send_message(self, guild, origin, channel, message):
         # strip everything after \n to avoid sneaky user sending multiple commands in single string
@@ -173,9 +175,13 @@ class WA_IRC:
 
     async def handle_command(self, connection, message):
         if message.command == '432':
-            raise Exception('Requested nickname contains invalid characters')
+            raise Exception(f'IRC error: Requested nickname contains invalid characters')
         if message.command == '433':
-            raise Exception('Requested nickname is already in use')
+            raise Exception(f'IRC error: Requested nickname is already in use')
+        if message.command == '474':
+            raise Exception(f'IRC error: Banned from channel {message.parameters[1]}')
+        if message.command == 'ERROR':
+            raise Exception(f'IRC error: "{message.parameters}"')
 
         # ignore commands triggered by self
         if message.prefix.nick == self.nickname:

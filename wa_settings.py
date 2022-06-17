@@ -1,4 +1,4 @@
-class WA_Settings():
+class WA_Settings:
     # GAMELIST
     WA_Gamelist = {
         'interval': 15,  # WormNET game list query interval in seconds.
@@ -17,7 +17,7 @@ class WA_Settings():
         'reply_message': 'This is a bot. I forward messages between Discord and WormNet. Feel free to'
                          ' join https://discord.gg/UBRBhk6 to meet all other wormers on discord!',
         'channels': ['anythinggoes', 'help'],
-        'ignore': [  # WormNET usernames who's messages should not be forwarded to discord
+        'ignore': [  # WormNET usernames whose messages should not be forwarded to discord
             'WormsLeague',  # Spammer
             'CorujaBOT'     # League spammer
         ]
