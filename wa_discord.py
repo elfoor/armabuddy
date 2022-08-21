@@ -251,14 +251,14 @@ class WA_Discord(discord.Client):
 
     # edits pinned messages containing user list for given channel
     async def update_userlists(self, channels: dict, interval=7):
-        while True:
+        await asyncio.sleep(interval)
+
+        # not safe to interact with discord before initialization is complete
+        while not self.prepared:
+            self.logger.warning(' ! Attempted to update userlist on Discord before initialization was fully complete.')
             await asyncio.sleep(interval)
 
-            # not safe to interact with discord before initialization is complete
-            if not self.prepared:
-                return self.logger.warning(' ! Attempted to update userlist on Discord before initialization'
-                                           ' was fully complete.')
-
+        while True:
             for channel, users in channels.items():
                 userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now(timezone.utc))
                 userlist.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
@@ -280,13 +280,14 @@ class WA_Discord(discord.Client):
                     if len(field) <= 0:
                         userlist.description = self.embed_no_host
                     else:
-                        userlist.add_field(
-                            name=title, value=field, inline=False)
+                        userlist.add_field(name=title, value=field, inline=False)
 
                 for settings in self.guild_list.values():
                     for channel_settings in settings['channels'].values():
                         if channel == channel_settings['forward']:
                             await channel_settings['message'].edit(content=None, embed=userlist)
+
+            await asyncio.sleep(interval)
 
     # forwards messages to channel using webhooks, if nickname exist on discord it will use their avatar
     async def send_message(self, irc_channel: str, sender: str, message: str, action: bool = False, snooper: str = None,
