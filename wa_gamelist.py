@@ -29,7 +29,7 @@ class WA_Gamelist:
             re.MULTILINE
         )
         self.gamelist_urls = kwargs['urls']
-        self.session = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30))
         self.headers = {
             'User-Agent': 'T17Client/3.8.1 (Steam)',
             'UserLevel': '0',
@@ -40,7 +40,11 @@ class WA_Gamelist:
         games = []
         for url in self.gamelist_urls:
             self.logger.debug(f' * Fetching gamelist: {url}.')
-            response = await self.session.get(url, headers=self.headers)
+            try:
+                response = await self.session.get(url, headers=self.headers)
+            except Exception as e:
+                self.logger.warning(f' ! {e}')
+                continue
             data = await response.read()
             html = WA_Encoder.decode(data)
             for game in self.regexp.finditer(html):
@@ -60,10 +64,10 @@ class WA_Gamelist:
                 await discord.update_gamelists(content=None, embed=embed)
                 fail = 0
             except Exception as e:
-                traceback.print_exception(type(e), e, e.__traceback__)
+                # traceback.print_exception(type(e), e, e.__traceback__)
                 fail += 1
                 self.logger.warning(f' ! Fetching gamelist has failed {fail} times in a row.')
                 self.logger.warning(f' ! {e}')
-                if fail >= 3 :
-                    self.logger.warning(' ! Fetching gamelist has failed the maximum allowed times in a row.')
-                    raise
+                # if fail >= 3:
+                #     self.logger.warning(' ! Fetching gamelist has failed the maximum allowed times in a row.')
+                #     raise
