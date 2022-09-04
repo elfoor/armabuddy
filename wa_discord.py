@@ -393,7 +393,8 @@ class WA_Discord(discord.Client):
         self.logger.warning(f' * {self.user.name} has been fully initialized!')
 
     async def on_disconnect(self):
-        self.logger.warning(f' * {self.user.name} has disconnected from Discord!')
+        # self.logger.warning(f' * {self.user.name} has disconnected from Discord!')
+        raise Exception(f'{self.user.name} has disconnected from Discord!')
 
     async def on_connect(self):
         self.logger.warning(f' * {self.user.name} has connected to Discord!')
