@@ -2,7 +2,7 @@ import aiohttp
 import asyncio
 import re
 import logging
-import traceback
+# import traceback
 from wa_encoder import WA_Encoder
 
 
@@ -39,7 +39,7 @@ class WA_Gamelist:
     async def fetch(self):
         games = []
         for url in self.gamelist_urls:
-            self.logger.debug(f' * Fetching gamelist: {url}.')
+            self.logger.warning(f' * Fetching gamelist: {url}.')
             try:
                 response = await self.session.get(url, headers=self.headers)
             except Exception as e:

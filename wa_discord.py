@@ -19,6 +19,7 @@ class WA_Discord(discord.Client):
         self.logger = logging.getLogger('WA_Logger')
         self._intents = discord.Intents.default()
         self._intents.members = True
+        self._intents.message_content = True
         self.prepared = False
         self.irc_reference = None
         self.forward_message = lambda x: x
@@ -205,7 +206,7 @@ class WA_Discord(discord.Client):
                     self.logger.warning(
                         f' ! Could not find webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
                     channel_settings['webhook'] = await channel.create_webhook(name=self.user.name,
-                                                                               avatar=await self.user.avatar_url.read())
+                                                                               avatar=await self.user.avatar.read())
                     self.logger.warning(
                         f' * Created webhook with name {self.user.name} in #{channel.name} on "{guild.name}"!')
 
@@ -332,7 +333,7 @@ class WA_Discord(discord.Client):
                     # then proceed to find user avatar if possible, and post it using the webhook
                     member = guild.get_member_named(sender)
                     username = sender if not snooper else f'{sender} ({snooper})'
-                    avatar_url = member.avatar_url if isinstance(member, discord.Member) else None
+                    avatar_url = member.avatar.url if isinstance(member, discord.Member) else None
                     await channel_settings['webhook'].send(content=message, username=username, avatar_url=avatar_url)
 
     # find forwarding channel name as string

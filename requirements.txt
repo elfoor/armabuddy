@@ -1,4 +1,3 @@
-discord.py==1.7.3
-aiohttp==3.7.3
+discord.py==2.0.1
+aiohttp
 async-irc
-py-irclib
