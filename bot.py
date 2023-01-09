@@ -77,7 +77,7 @@ try:
     irc.handlers['help']['JOIN'] = irc_entry_help_handler
     irc.handlers['help']['PART'] = irc_entry_help_handler
     irc.handlers['help']['QUIT'] = irc_entry_help_handler
-    # irc.handlers['anythinggoes']['PRIVMSG'] = irc.default_privmsg_handler
+    irc.handlers['anythinggoes']['PRIVMSG'] = irc.default_privmsg_handler
 
     loop.run_forever()  # this works, NICE!
 except KeyboardInterrupt:
