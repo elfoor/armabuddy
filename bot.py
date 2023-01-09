@@ -23,18 +23,25 @@ def fatal_handler(loop, context):
 
 async def irc_entry_help_handler(connection, message):
     sender = message.prefix.nick
-    channel = message.parameters[0][1:].lower()
+    if message.command == 'QUIT':
+        channel = 'help'
+    else:
+        channel = message.parameters[0][1:].lower()
 
     # only write join / part messages if user has written in #help
     if sender in irc.activity[channel]:
+        # if not parting/quitting or written in a while, remove user from activity list
         time_since_activity = datetime.now(timezone.utc) - irc.activity[channel][sender]
-        # if parting, always show, otherwise only if written in the last 5 minutes
-        if message.command == 'PART' or time_since_activity < timedelta(minutes=5):
-            message = f'{sender} has {message.command.lower()}ed the channel!'
-            return await discord.send_message(irc_channel=channel, sender=sender, message=message, action=True)
-        # if not parting or have not written in a while, remove user from activity list
-        else:
+        if message.command not in ('PART', 'QUIT') and time_since_activity > timedelta(minutes=5):
             return irc.activity[channel].pop(sender, None)
+
+        # if parting/quitting, always show, and remove from activity list if quitting
+        if message.command == 'QUIT':
+            irc.activity[channel].pop(sender, None)
+            message = f'{sender} has {message.command.lower()} WormNET! [{message.parameters}]'
+        else:
+            message = f'{sender} has {message.command.lower()}ed the channel!'
+        return await discord.send_message(irc_channel=channel, sender=sender, message=message, action=True)
 
 
 # MAIN #
@@ -69,7 +76,8 @@ try:
     irc.handlers['help']['PRIVMSG'] = irc.default_privmsg_handler
     irc.handlers['help']['JOIN'] = irc_entry_help_handler
     irc.handlers['help']['PART'] = irc_entry_help_handler
-    irc.handlers['anythinggoes']['PRIVMSG'] = irc.default_privmsg_handler
+    irc.handlers['help']['QUIT'] = irc_entry_help_handler
+    # irc.handlers['anythinggoes']['PRIVMSG'] = irc.default_privmsg_handler
 
     loop.run_forever()  # this works, NICE!
 except KeyboardInterrupt:

@@ -148,6 +148,10 @@ class WA_IRC:
     async def send_message(self, guild, origin, channel, message):
         # strip everything after \n to avoid sneaky user sending multiple commands in single string
         message = message.split('\n')[0]
+
+        # prevent bot from letting itself get banned from n word, hex to avoid any potential github issues
+        message = re.sub('\x6e\x69\x67\x67\x65\x72', '\x6e\x69\x67\x67\x65г', message, flags=re.IGNORECASE)
+
         message = f'PRIVMSG #{channel} :{message}'
 
         # keep message under 250 characters at least, in reality max length is 512
@@ -182,10 +186,22 @@ class WA_IRC:
             raise Exception(f'IRC error: Banned from channel {message.parameters[1]}')
         if message.command == 'ERROR':
             raise Exception(f'IRC error: "{message.parameters}"')
+        if message.command == 'PING':  # Seemingly a bug in AsyncIRC, shows only rarely but does show up.
+            self.logger.warning(' ! Ping command not handled by AsyncIRC, skipping.')
+            return
+
+        # if message.command != 'PRIVMSG':
+        #     import pickle
+        #     with open(f'{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}_non_privmsg.pickle', 'wb') as f:
+        #         pickle.dump(message, f)
 
         # ignore commands triggered by self
         if message.prefix.nick == self.nickname:
             return
+
+        # no channel when quitting, check for activity in help then post quit message and reason if so to help
+        if message.command == 'QUIT' and message.prefix.nick in self.activity['help']:
+            return await self.handlers['help'][message.command](connection, message)
 
         # if destination is a channel call handler
         if message.parameters[0][0] == '#':

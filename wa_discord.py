@@ -334,6 +334,8 @@ class WA_Discord(discord.Client):
                     member = guild.get_member_named(sender)
                     username = sender if not snooper else f'{sender} ({snooper})'
                     avatar_url = member.avatar.url if isinstance(member, discord.Member) else None
+                    # workaround douchecord being possessive with their name
+                    username = re.sub('discord', 'Disc\N{CYRILLIC SMALL LETTER O}rd', username, flags=re.IGNORECASE)
                     await channel_settings['webhook'].send(content=message, username=username, avatar_url=avatar_url)
 
     # find forwarding channel name as string
