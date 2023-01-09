@@ -190,11 +190,6 @@ class WA_IRC:
             self.logger.warning(' ! Ping command not handled by AsyncIRC, skipping.')
             return
 
-        # if message.command != 'PRIVMSG':
-        #     import pickle
-        #     with open(f'{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}_non_privmsg.pickle', 'wb') as f:
-        #         pickle.dump(message, f)
-
         # ignore commands triggered by self
         if message.prefix.nick == self.nickname:
             return
