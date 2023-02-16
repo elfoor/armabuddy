@@ -20,6 +20,7 @@ class WA_IRC:
         self.logger = logging.getLogger('WA_Logger')
         self.wormnet = kwargs.pop('hostname')
         self.nickname = kwargs.pop('username')
+        self.realname_parameters = '0 13 GB ArmaBuddy Discord Bot'  # FlagID, RankID, CountryCode, *Description
         self.channels = dict(zip(kwargs.get('channels'), [set() for _ in kwargs.get('channels')]))
         self.handlers = dict(zip(kwargs.get('channels'), [{} for _ in kwargs.get('channels')]))
         self.commands = dict(zip(kwargs.get('channels'), [False for _ in kwargs.get('channels')]))
@@ -37,7 +38,7 @@ class WA_IRC:
         self.forward_message = lambda x: x
 
         # register handlers for every needed internal
-        self.connection = IrcProtocol([self.server], self.nickname, loop=self.loop)
+        self.connection = IrcProtocol([self.server], self.nickname, realname=self.realname_parameters, loop=self.loop)
         self.connection.register_cap('userhost-in-names')
         self.connection.register('*', self.handle_command)
         self.connection.register('002', self.decide_transcode)  # Server name and version
