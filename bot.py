@@ -61,7 +61,7 @@ try:
 
     # DISCORD SETUP #
     discord = WA_Discord(**WA_Settings.WA_Discord)
-    loop.create_task(discord.update_userlists(irc.channels, interval=7))
+    loop.create_task(discord.update_userlists(irc.channels, interval=5))
     loop.create_task(discord.run())
 
     # LIST SETUP #

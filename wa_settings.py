@@ -1,7 +1,7 @@
 class WA_Settings:
     # GAMELIST
     WA_Gamelist = {
-        'interval': 15,  # WormNET game list query interval in seconds.
+        'interval': 10,  # WormNET game list query interval in seconds.
         'urls': [
             'http://wormnet1.team17.com/wormageddonweb/GameList.asp?Channel=AnythingGoes',  # T17 WormNET
             'http://wormnet.net/wormageddonweb/GameList.asp?Channel=AnythingGoes'  # Community server

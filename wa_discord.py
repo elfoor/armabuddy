@@ -251,7 +251,7 @@ class WA_Discord(discord.Client):
                 self.logger.warning(f' * Updated pinned game list in #{channel.name} on "{guild.name}".')
 
     # edits pinned messages containing user list for given channel
-    async def update_userlists(self, channels: dict, interval=7):
+    async def update_userlists(self, channels: dict, interval=5):
         await asyncio.sleep(interval)
 
         # not safe to interact with discord before initialization is complete
