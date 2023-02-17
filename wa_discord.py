@@ -336,6 +336,8 @@ class WA_Discord(discord.Client):
                     avatar_url = member.avatar.url if isinstance(member, discord.Member) else None
                     # workaround douchecord being possessive with their name
                     username = re.sub('discord', 'Disc\N{CYRILLIC SMALL LETTER O}rd', username, flags=re.IGNORECASE)
+                    # workaround triple backtick issue
+                    username = username.replace('```', '\N{MODIFIER LETTER GRAVE ACCENT}' * 3)
                     await channel_settings['webhook'].send(content=message, username=username, avatar_url=avatar_url)
 
     # find forwarding channel name as string
