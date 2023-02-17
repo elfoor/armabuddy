@@ -21,7 +21,7 @@ class WA_IRC:
         self.wormnet = kwargs.pop('hostname')
         self.nickname = kwargs.pop('username')
         self.realname_parameters = '0 13 GB ArmaBuddy Discord Bot'  # FlagID, RankID, CountryCode, *Description
-        self.channels = dict(zip(kwargs.get('channels'), [set() for _ in kwargs.get('channels')]))
+        self.channels = dict(zip(kwargs.get('channels'), [{} for _ in kwargs.get('channels')]))
         self.handlers = dict(zip(kwargs.get('channels'), [{} for _ in kwargs.get('channels')]))
         self.commands = dict(zip(kwargs.get('channels'), [False for _ in kwargs.get('channels')]))
         self.activity = dict(zip(kwargs.get('channels'), [{} for _ in kwargs.get('channels')]))
@@ -47,7 +47,7 @@ class WA_IRC:
         self.connection.register('JOIN', self.handle_entry)
         self.connection.register('PART', self.handle_entry)
         self.connection.register('QUIT', self.handle_entry)
-        self.connection.register('353', self.handle_entry)  # NAMES reply, lists client name and status for channel
+        self.connection.register('352', self.handle_entry)  # WHO reply, lists client name, status, realname and more
 
         # horrible horrible hack for a horrible horrible library
         IrcProtocol.connection_lost = __class__.connection_lost
@@ -118,37 +118,43 @@ class WA_IRC:
         channel = message.parameters[0][1:].lower()
         if message.command == 'JOIN':  # add user to channel set if joining
             if channel in self.channels:
-                self.channels[channel].add(message.prefix.nick)
+                self.connection.send(f'WHO {message.prefix.nick}')
             if channel == 'help':
                 asyncio.create_task(self.send_private(user=message.prefix.nick, message=self.help_message, delay=0.9))
                 await asyncio.sleep(0)
         elif message.command == 'PART':  # remove user from channel set if parting
             if channel in self.channels:
-                self.channels[channel].discard(message.prefix.nick)
+                self.channels[channel].pop(message.prefix.nick)
         elif message.command == 'QUIT':  # remove user from all channel sets if quitting
             for channel in self.channels:
-                if self.channels[channel]:
-                    self.channels[channel].discard(message.prefix.nick)
-        elif message.command == '353':
-            # strip any modes from users, should not be set on WormNET, but will make testing a pain on regular networks
-            no_modes = message.parameters[3].translate({ord(i): None for i in '@+$%'})
-            users = no_modes.split()
-            channel = message.parameters[2][1:].lower()
-            for user in users:
-                self.channels[channel].add(user.split('!')[0])
+                if message.prefix.nick in self.channels[channel]:
+                    self.channels[channel].pop(message.prefix.nick)
+        elif message.command == '352':  # WHO request reponse
+            channel = message.parameters[1][1:].lower()
+            user = message.parameters[5]
+            realname_parameters = message.parameters[7][2:]
+
+            self.channels[channel].update({user: realname_parameters})
 
     async def join_channels(self, conn, message):
-        for channel_name, settings in self.channels.items():
+        for channel_name in self.channels:
             # create new set containing user list
             self.logger.warning(f' * Joining WormNET channel: #{channel_name}!')
-            self.connection.send(f'JOIN #{channel_name}')
 
+            self.connection.send(f'JOIN #{channel_name}')
             # give server a few seconds to give us NAMES, if none has been received after timeout propagate error
             result = await self.connection.wait_for('366', timeout=30)
             if result is None:
                 raise Exception(f'Never received NAMES after joining WormNET channel #{channel_name}.')
-            else:
-                self.logger.warning(f' * Successfully joined WormNET channel: #{channel_name}!')
+
+            self.connection.send(f'WHO #{channel_name}')
+            # give server a few seconds to give us user details, if none has been received after timeout propagate error
+            result = await self.connection.wait_for('315', timeout=30)
+            if result is None:
+                raise Exception(f'Never received all user details from WHO request after joining WormNET channel'
+                                f' #{channel_name}.')
+
+            self.logger.warning(f' * Successfully joined WormNET channel: #{channel_name}!')
 
     async def send_message(self, guild, origin, channel, message):
         # strip everything after \n to avoid sneaky user sending multiple commands in single string

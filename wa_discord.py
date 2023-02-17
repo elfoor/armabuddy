@@ -4,7 +4,7 @@ import logging
 import re
 from datetime import datetime, timezone
 
-from wa_flags import WA_Flags
+from wa_flags import WA_Flags, COUNTRY_CODES
 import discord
 discord.VoiceClient.warn_nacl = False
 
@@ -260,18 +260,21 @@ class WA_Discord(discord.Client):
             await asyncio.sleep(interval)
 
         while True:
-            for channel, users in channels.items():
+            for channel, all_users in channels.items():
                 userlist = discord.Embed(colour=self.embed_color, timestamp=datetime.now(timezone.utc))
                 userlist.set_footer(text=self.embed_footer, icon_url=self.embed_icon)
 
-                if not users or not len(users):
+                if not all_users or not len(all_users):
                     userlist.description = self.embed_no_users
                 else:
-                    users = sorted(users, key=str.lower)
+                    users, snoop_users = await self.get_sorted_user_entries(all_users)
+
                     field = ''
-                    title = f'{len(users)} users online in #{channel}'
-                    for user in users:
-                        append = discord.utils.escape_markdown(user) + '\n'
+                    title = (f'{len(users) + len(snoop_users)} online in #{channel}\n'
+                             f'({len(users)} users and {len(snoop_users)} snoopers)')
+
+                    for user_icon, username in users + snoop_users:
+                        append = f'{user_icon}\N{EM SPACE}{discord.utils.escape_markdown(username)}\n'
 
                         if len(field) + len(append) >= 1024:
                             userlist.add_field(name=title, value=field, inline=False)

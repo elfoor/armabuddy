@@ -86,3 +86,11 @@ WA_Flags = {  # https://worms2d.info/WormNET_flags
     '84': ':flag_vn:',  # Vietnam
     '85': ':flag_kg:'   # Kyrgyzstan
 }
+
+COUNTRY_CODES = (
+    'GB', 'AR', 'AU', 'AT', 'BE', 'BR', 'CA', 'HR', 'BA', 'CY', 'CZ', 'DK', 'FI', 'FR', 'GE', 'DE', 'GR',
+    'HK', 'HU', 'IS', 'IN', 'ID', 'IR', 'IQ', 'IE', 'IL', 'IT', 'JP', 'LI', 'LU', 'MY', 'MT', 'MX', 'MA',
+    'NL', 'NZ', 'NO', 'PL', 'PT', 'PR', 'RO', 'RU', 'SG', 'ZA', 'ES', 'SE', 'CH', 'TR', 'US', 'CL', 'RS',
+    'SI', 'LB', 'MD', 'UA', 'LV', 'SK', 'CR', 'EE', 'CN', 'CO', 'EC', 'UY', 'VE', 'LT', 'BG', 'EG', 'SA',
+    'KR', 'BY', 'PE', 'DZ', 'KZ', 'SV', 'TW', 'JM', 'GT', 'MH', 'MK', 'AE', 'VN', 'KG'
+)
