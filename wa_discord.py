@@ -250,6 +250,41 @@ class WA_Discord(discord.Client):
                 await settings['gamelist']['message'].edit(**kwargs)
                 self.logger.warning(f' * Updated pinned game list in #{channel.name} on "{guild.name}".')
 
+    @staticmethod
+    async def get_sorted_user_entries(all_users):
+        # Separate users and snoopers and add snooper rank/flag to each and sort for display.
+        # Imitate WA flag behaviours such as FlagID taking precedence over country code
+
+        users, snoop_users = [], []
+        for username, realname_parameters in all_users.items():
+            realname_parameters = realname_parameters.split(' ')
+            if len(realname_parameters) < 4:
+                users.append((f'{WA_Flags["49"]}', username))
+                continue
+
+            if realname_parameters[1] == '13':
+                snoop_users.append((f':eye:', username))
+                continue
+
+            try:
+                flag_id = int(realname_parameters[0])
+            except ValueError:
+                users.append((f'{WA_Flags["49"]}', username))
+                continue
+
+            if flag_id < 49:
+                users.append((f'{WA_Flags.get(str(flag_id), "49")}', username))
+                continue
+
+            if flag_id == 49 and (country_code := realname_parameters[2]) in COUNTRY_CODES:
+                users.append((f':flag_{country_code.lower()}:', username))
+            else:
+                users.append((f'{WA_Flags["49"]}', username))
+
+        users.sort(key=lambda user_entry: user_entry[1].lower())
+        snoop_users.sort(key=lambda user_entry: user_entry[1].lower())
+        return users, snoop_users
+
     # edits pinned messages containing user list for given channel
     async def update_userlists(self, channels: dict, interval=5):
         await asyncio.sleep(interval)
