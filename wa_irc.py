@@ -33,6 +33,7 @@ class WA_IRC:
         self.reconnect_delay = 30
         self.server = Server(self.wormnet, self.port, self.is_ssl, password=self.password)
         self.reply_message = kwargs.get('reply_message', 'ArmaBuddy!')
+        self.help_message = kwargs.get('help_message')
         self.ignore = kwargs.get('ignore', [])
         self.snooper = kwargs.get('snooper', 'WebSnoop')
         self.forward_message = lambda x: x
@@ -118,6 +119,9 @@ class WA_IRC:
         if message.command == 'JOIN':  # add user to channel set if joining
             if channel in self.channels:
                 self.channels[channel].add(message.prefix.nick)
+            if channel == 'help':
+                asyncio.create_task(self.send_private(user=message.prefix.nick, message=self.help_message, delay=0.9))
+                await asyncio.sleep(0)
         elif message.command == 'PART':  # remove user from channel set if parting
             if channel in self.channels:
                 self.channels[channel].discard(message.prefix.nick)
@@ -160,7 +164,9 @@ class WA_IRC:
         self.logger.warning(f' * Forwarding message from #{origin} on "{guild}" to WormNET #{channel}: {message}')
         await self.transport_write(message)
 
-    async def send_private(self, user, message):
+    async def send_private(self, user, message, delay=0.0):
+        await asyncio.sleep(delay)
+
         # strip everything after \n to avoid sneaky user sending multiple commands in single string
         message = message.split('\n')[0]
         message = f'PRIVMSG {user} :{message}'

@@ -16,6 +16,9 @@ class WA_Settings:
         'snooper': 'WebSnoop',
         'reply_message': 'This is a bot. I forward messages between Discord and WormNet. Feel free to'
                          ' join https://discord.gg/UBRBhk6 to meet all other wormers on discord!',
+        'help_message': r'\bHelp is also available from the W:A community via Discord. _ _ _ _ _ _ _ _ _ _ _ _ _'
+                        r' \BYou can join the \wWorms Armageddon \Bserver here:'
+                        r' \Rhttps://\rdiscord.gg/UBRBhk6'.replace('_', '\N{NO-BREAK SPACE}'),
         'channels': ['anythinggoes', 'help'],
         'ignore': [  # WormNET usernames whose messages should not be forwarded to discord
             'WormsLeague',  # Spammer
