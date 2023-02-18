@@ -378,7 +378,7 @@ class WA_Discord(discord.Client):
                     # then proceed to find user avatar if possible, and post it using the webhook
                     member = guild.get_member_named(sender)
                     username = sender if not snooper else f'{sender} ({snooper})'
-                    avatar_url = member.avatar.url if isinstance(member, discord.Member) else None
+                    avatar_url = member.display_avatar if isinstance(member, discord.Member) else None
                     # workaround douchecord being possessive with their name
                     username = re.sub('discord', 'Disc\N{CYRILLIC SMALL LETTER O}rd', username, flags=re.IGNORECASE)
                     # workaround triple backtick issue
@@ -443,8 +443,8 @@ class WA_Discord(discord.Client):
         self.logger.warning(f' * {self.user.name} has been fully initialized!')
 
     async def on_disconnect(self):
-        # self.logger.warning(f' * {self.user.name} has disconnected from Discord!')
-        raise Exception(f'{self.user.name} has disconnected from Discord!')
+        self.logger.warning(f' ! {self.user.name} has disconnected from Discord!')
+        # raise Exception(f'{self.user.name} has disconnected from Discord!')
 
     async def on_connect(self):
         self.logger.warning(f' * {self.user.name} has connected to Discord!')
