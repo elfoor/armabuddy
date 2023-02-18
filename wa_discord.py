@@ -313,6 +313,7 @@ class WA_Discord(discord.Client):
 
                         if len(field) + len(append) >= 1024:
                             userlist.add_field(name=title, value=field, inline=False)
+                            title = ''  # clear title to prevent it being repeated for every field if length over max
                             field = ''
                         field += append
 
