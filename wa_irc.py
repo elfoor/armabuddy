@@ -115,12 +115,16 @@ class WA_IRC:
         self.logger.info(f' * IRC_RAW {message}')
 
     async def handle_entry(self, conn, message):
+        # ignore messages triggered by self
+        if message.prefix.nick == self.nickname:
+            return
+
         channel = message.parameters[0][1:].lower()
         if message.command == 'JOIN':  # add user to channel set if joining
             if channel in self.channels:
                 self.connection.send(f'WHO {message.prefix.nick}')
             if channel == 'help':
-                asyncio.create_task(self.send_private(user=message.prefix.nick, message=self.help_message, delay=0.9))
+                self.loop.create_task(self.send_private(user=message.prefix.nick, message=self.help_message, delay=0.9))
                 await asyncio.sleep(0)
         elif message.command == 'PART':  # remove user from channel set if parting
             if channel in self.channels:
@@ -131,10 +135,10 @@ class WA_IRC:
                     self.channels[channel].pop(message.prefix.nick)
         elif message.command == '352':  # WHO request reponse
             channel = message.parameters[1][1:].lower()
-            user = message.parameters[5]
-            realname_parameters = message.parameters[7][2:]
-
-            self.channels[channel].update({user: realname_parameters})
+            if channel in self.channels:
+                user = message.parameters[5]
+                realname_parameters = message.parameters[7][2:]
+                self.channels[channel].update({user: realname_parameters})
 
     async def join_channels(self, conn, message):
         for channel_name in self.channels:
