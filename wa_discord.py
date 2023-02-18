@@ -32,6 +32,7 @@ class WA_Discord(discord.Client):
         self.embed_default_flag = WA_Flags['49']
         self.embed_public_game = ':unlock:'
         self.embed_private_game = ':closed_lock_with_key:'
+        self.embed_snooper_icon = '<:snooper:750119141423448186>'
         self.embed_no_host = '*There are currently no games hosted on WormNET..* <:sadworm:883155422675087452>'
         self.embed_no_users = '*There are currently no users online on WormNET, something is probably horribly wrong.'
 
@@ -250,8 +251,7 @@ class WA_Discord(discord.Client):
                 await settings['gamelist']['message'].edit(**kwargs)
                 self.logger.warning(f' * Updated pinned game list in #{channel.name} on "{guild.name}".')
 
-    @staticmethod
-    async def get_sorted_user_entries(all_users):
+    async def get_sorted_user_entries(self, all_users):
         # Separate users and snoopers and add snooper rank/flag to each and sort for display.
         # Imitate WA flag behaviours such as FlagID taking precedence over country code
 
@@ -263,7 +263,7 @@ class WA_Discord(discord.Client):
                 continue
 
             if realname_parameters[1] == '13':
-                snoop_users.append((f':eye:', username))
+                snoop_users.append((self.embed_snooper_icon, username))
                 continue
 
             try:
