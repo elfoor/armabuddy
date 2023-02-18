@@ -257,12 +257,18 @@ class WA_Discord(discord.Client):
 
         users, snoop_users = [], []
         for username, realname_parameters in all_users.items():
+            # Treat ChanServ as a snooper to get it sorted at the bottom with the other bots
+            if username == 'ChanServ':
+                snoop_users.append((self.embed_snooper_icon, username))
+                continue
+
             realname_parameters = realname_parameters.split(' ')
             if len(realname_parameters) < 4:
                 users.append((f'{WA_Flags["49"]}', username))
                 continue
 
-            if realname_parameters[1] == '13':
+            # rank id 13 (snooper), as is, or via a 32-bit unsigned integer overflow to 13 (ProSnooper buddy fix thing)
+            if realname_parameters[1] in ('13', '4294967309'):
                 snoop_users.append((self.embed_snooper_icon, username))
                 continue
 
