@@ -267,7 +267,7 @@ class WA_Discord(discord.Client):
                 continue
 
             realname_parameters = realname_parameters.split(' ')
-            if len(realname_parameters) < 4:
+            if len(realname_parameters) < 3:
                 users.append((f'{WA_Flags["49"]}', username))
                 continue
 
@@ -282,14 +282,11 @@ class WA_Discord(discord.Client):
                 users.append((f'{WA_Flags["49"]}', username))
                 continue
 
-            if flag_id < 49:
-                users.append((f'{WA_Flags.get(str(flag_id), "49")}', username))
-                continue
-
             if flag_id == 49 and (country_code := realname_parameters[2]) in COUNTRY_CODES:
                 users.append((f':flag_{country_code.lower()}:', username))
             else:
-                users.append((f'{WA_Flags["49"]}', username))
+                users.append((f'{WA_Flags.get(str(flag_id), "49")}', username))
+                continue
 
         users.sort(key=lambda user_entry: user_entry[1].lower())
         snoop_users.sort(key=lambda user_entry: user_entry[1].lower())
