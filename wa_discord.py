@@ -262,6 +262,10 @@ class WA_Discord(discord.Client):
                 snoop_users.append((self.embed_snooper_icon, username))
                 continue
 
+            if 'snoop' in realname_parameters.lower():
+                snoop_users.append((self.embed_snooper_icon, username))
+                continue
+
             realname_parameters = realname_parameters.split(' ')
             if len(realname_parameters) < 4:
                 users.append((f'{WA_Flags["49"]}', username))
