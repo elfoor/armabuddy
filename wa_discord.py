@@ -318,19 +318,21 @@ class WA_Discord(discord.Client):
                     title = (f'{len(users) + len(snoop_users)} online in #{channel}\n'
                              f'({len(users)} users and {len(snoop_users)} snoopers)')
 
-                    for user_icon, username in users + snoop_users:
-                        append = f'{user_icon}\N{EM SPACE}{discord.utils.escape_markdown(username)}\n'
+                    for user_type in users, snoop_users:
+                        for user_icon, username in user_type:
+                            append = f'{user_icon}\N{EM SPACE}{discord.utils.escape_markdown(username)}\n'
 
-                        if len(field) + len(append) >= 1024:
+                            if len(field) + len(append) >= 1024:
+                                userlist.add_field(name=title, value=field, inline=False)
+                                title = ''  # clear title to prevent it repeating for every field if length over max
+                            field += append
+
+                        if len(field) <= 0:
+                            userlist.description = self.embed_no_host
+                        else:
                             userlist.add_field(name=title, value=field, inline=False)
-                            title = ''  # clear title to prevent it being repeated for every field if length over max
-                            field = ''
-                        field += append
 
-                    if len(field) <= 0:
-                        userlist.description = self.embed_no_host
-                    else:
-                        userlist.add_field(name=title, value=field, inline=False)
+                        title = field = ''
 
                 for settings in self.guild_list.values():
                     for channel_settings in settings['channels'].values():
