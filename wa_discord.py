@@ -312,6 +312,7 @@ class WA_Discord(discord.Client):
                     users, snoop_users = await self.get_sorted_user_entries(all_users)
 
                     field = ''
+                    added_fields = 0
                     title = (f'{len(users) + len(snoop_users)} online in #{channel}\n'
                              f'({len(users)} users and {len(snoop_users)} snoopers)')
 
@@ -321,16 +322,19 @@ class WA_Discord(discord.Client):
 
                             if len(field) + len(append) >= 1024:
                                 userlist.add_field(name=title, value=field, inline=False)
+                                added_fields += 1
                                 title = ''  # clear title to prevent it repeating for every field if length over max
                                 field = ''
                             field += append
 
-                        if len(field) <= 0:
-                            userlist.description = self.embed_no_host
-                        else:
+                        if len(field) > 0:
                             userlist.add_field(name=title, value=field, inline=False)
+                            added_fields += 1
+                            field = ''
+                            title = ''
 
-                        title = field = ''
+                    if added_fields == 0:
+                        userlist.description = self.embed_no_users
 
                 for settings in self.guild_list.values():
                     for channel_settings in settings['channels'].values():
