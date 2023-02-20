@@ -128,11 +128,10 @@ class WA_IRC:
                 await asyncio.sleep(0)
         elif message.command == 'PART':  # remove user from channel set if parting
             if channel in self.channels:
-                self.channels[channel].pop(message.prefix.nick)
+                self.channels[channel].pop(message.prefix.nick, None)
         elif message.command == 'QUIT':  # remove user from all channel sets if quitting
             for channel in self.channels:
-                if message.prefix.nick in self.channels[channel]:
-                    self.channels[channel].pop(message.prefix.nick)
+                self.channels[channel].pop(message.prefix.nick, None)
         elif message.command == '352':  # WHO request reponse
             channel = message.parameters[1][1:].lower()
             if channel in self.channels:
