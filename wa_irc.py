@@ -212,8 +212,18 @@ class WA_IRC:
             return
 
         # no channel when quitting, check for activity in help then post quit message and reason if so to help
-        if message.command == 'QUIT' and message.prefix.nick in self.activity['help']:
-            return await self.handlers['help'][message.command](connection, message)
+        if message.command == 'QUIT':
+            if message.prefix.nick in self.activity['help']:
+                return await self.handlers['help'][message.command](connection, message)
+            return  # don't process QUIT any further regardless
+
+        if not message.parameters[0]:
+            return  # nothing more to do if there isn't parameters
+
+        if message.parameters[0][0] != '#' and message.command == 'PRIVMSG':
+            # reply to all PM with predefined phrase
+            self.logger.warning(f' * Received PM on WormNET from {message.prefix.nick}: {message.parameters[1]}')
+            return await self.send_private(user=message.prefix.nick, message=self.reply_message)
 
         # if destination is a channel call handler
         if message.parameters[0][0] == '#':
@@ -225,11 +235,6 @@ class WA_IRC:
 
             if channel in self.channels and message.command in self.handlers[channel]:
                 return await self.handlers[channel][message.command](connection, message)
-
-        # reply to all PM with predefined phrase
-        elif message.parameters[0][0] != '#' and message.command == 'PRIVMSG':
-            self.logger.warning(f' * Received PM on WormNET from {message.prefix.nick}: {message.parameters[1]}')
-            return await self.send_private(user=message.prefix.nick, message=self.reply_message)
 
     async def default_privmsg_handler(self, connection, message):
         # lowercase channel / username
