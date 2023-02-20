@@ -174,7 +174,8 @@ class WA_IRC:
         await self.transport_write(message)
 
     async def send_private(self, user, message, delay=0.0):
-        await asyncio.sleep(delay)
+        if delay:
+            await asyncio.sleep(delay)
 
         # strip everything after \n to avoid sneaky user sending multiple commands in single string
         message = message.split('\n')[0]
