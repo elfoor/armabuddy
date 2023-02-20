@@ -33,7 +33,7 @@ class WA_IRC:
         self.reconnect_delay = 30
         self.server = Server(self.wormnet, self.port, self.is_ssl, password=self.password)
         self.reply_message = kwargs.get('reply_message', 'ArmaBuddy!')
-        self.help_message = kwargs.get('help_message')
+        self.help_message = kwargs.get('help_message', '')
         self.ignore = kwargs.get('ignore', [])
         self.snooper = kwargs.get('snooper', 'WebSnoop')
         self.forward_message = lambda x: x
