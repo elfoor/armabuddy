@@ -25,6 +25,7 @@ class WA_IRC:
         self.handlers = dict(zip(kwargs.get('channels'), [{} for _ in kwargs.get('channels')]))
         self.commands = dict(zip(kwargs.get('channels'), [False for _ in kwargs.get('channels')]))
         self.activity = dict(zip(kwargs.get('channels'), [{} for _ in kwargs.get('channels')]))
+        self.activity_pm_replied = set()
         self.port = kwargs.pop('port')
         self.password = kwargs.pop('password', None)
         self.is_ssl = kwargs.pop('is_ssl', False)
@@ -159,6 +160,11 @@ class WA_IRC:
 
             self.logger.warning(f' * Successfully joined WormNET channel: #{channel_name}!')
 
+    async def clear_pm_activity(self, user, delay=0.0):
+        if delay:
+            await asyncio.sleep(delay)
+        self.activity_pm_replied.discard(user)
+
     async def send_message(self, guild, origin, channel, message):
         # strip everything after \n to avoid sneaky user sending multiple commands in single string
         message = message.split('\n')[0]
@@ -221,8 +227,14 @@ class WA_IRC:
             return  # nothing more to do if there isn't parameters
 
         if message.parameters[0][0] != '#' and message.command == 'PRIVMSG':
-            # reply to all PM with predefined phrase
+            # reply to all PM with predefined phrase, unless already replied within the limit
+            if message.prefix.nick in self.activity_pm_replied:
+                return self.logger.warning(f' * Ignoring PM within time limit on WormNET from {message.prefix.nick}:'
+                                           f' {message.parameters[1]}')
+
             self.logger.warning(f' * Received PM on WormNET from {message.prefix.nick}: {message.parameters[1]}')
+            self.activity_pm_replied.add(message.prefix.nick)
+            self.loop.create_task(self.clear_pm_activity(message.prefix.nick, delay=5))
             return await self.send_private(user=message.prefix.nick, message=self.reply_message)
 
         # if destination is a channel call handler
