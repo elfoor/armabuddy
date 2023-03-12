@@ -80,7 +80,8 @@ class WA_Discord(discord.Client):
                 # attempt to unpack ISO 3166-1 alpha-2 country code from LOWORD of last field of game response
                 flag_bytes = (int(game['packed_flag_id']) & 0xFFFF).to_bytes(2, 'little')
                 if all(ord('A') <= char <= ord('Z') for char in flag_bytes):
-                    flag = f':flag_{flag_bytes.decode("ascii").lower()}:'
+                    if (flag_code := flag_bytes.decode('ascii')) in COUNTRY_CODES:
+                        flag = f':flag_{flag_code.lower()}:'
 
             if not flag:
                 flag = WA_Flags.get(game['country'], self.embed_default_flag)
