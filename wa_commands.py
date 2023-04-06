@@ -4,6 +4,7 @@ import json
 import asyncio
 from wa_wormnat_guide_poster import main as post_wormnat_guide
 from wa_encoder import WA1252
+import logging
 
 
 class WA_Commands:
@@ -106,6 +107,8 @@ class WA_Commands:
         self.wormnat_user_command_timeout = set()
         self.wormnat_global_command_timeout = False
 
+        self.logger = logging.getLogger('WA_Logger')
+
     async def clear_wormnat_user_activity(self, user, delay=0.0):
         if delay:
             await asyncio.sleep(delay)
@@ -152,6 +155,11 @@ wa_commands = WA_Commands()
     scheme='Choose a scheme to host, use /schemes to get a list',
     password='An optional password to lock the game with')
 async def host(interaction: discord.Interaction, scheme: str, game_name: str = '', password: str = ''):
+    wa_commands.logger.warning(f' * Host command used by {interaction.user.display_name}'
+                               f' ({interaction.user.id}) on Discord server'
+                               f' "{interaction.guild.name}" on channel #{interaction.channel.name}.'
+                               f' {scheme=} | {game_name=} | {password=}')
+
     if not (scheme_id := wa_commands.SCHEME_ID_MAP.get(scheme.upper())):
         return await interaction.response.send_message(f'Scheme input not recognized: "{scheme}"', ephemeral=True)
 
@@ -213,6 +221,10 @@ async def host(interaction: discord.Interaction, scheme: str, game_name: str = '
 
 @discord.app_commands.command(description='Get a list of schemes supported by /host')
 async def schemes(interaction: discord.Interaction):
+    wa_commands.logger.warning(f' * Schemes command used by {interaction.user.display_name}'
+                               f' ({interaction.user.id}) on Discord server'
+                               f' "{interaction.guild.name}" on channel #{interaction.channel.name}')
+
     return await interaction.response.send_message(
         'Websnoop schemes list (aliases in brackets):\n'
         f'{wa_commands.SCHEMES_FORMATTED}',
@@ -221,6 +233,10 @@ async def schemes(interaction: discord.Interaction):
 
 @discord.app_commands.command(description='Post the wormNAT2 installation TL;DR guide.')
 async def wormnat_guide(interaction: discord.Interaction):
+    wa_commands.logger.warning(f' * Wormnat guide command used by {interaction.user.display_name}'
+                               f' ({interaction.user.id}) on Discord server'
+                               f' "{interaction.guild.name}" on channel #{interaction.channel.name}')
+
     if wa_commands.wormnat_global_command_timeout:
         return await interaction.response.send_message('This command has been used too recently', ephemeral=True)
 
