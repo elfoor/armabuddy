@@ -3,7 +3,6 @@ import asyncio
 import re
 import logging
 # import traceback
-from wa_encoder import WA_Encoder
 
 
 class WA_Gamelist:
@@ -45,8 +44,9 @@ class WA_Gamelist:
             except Exception as e:
                 self.logger.warning(f' ! {e}')
                 continue
+
             data = await response.read()
-            html = WA_Encoder.decode(data)
+            html = data.decode('wa1252')
             for game in self.regexp.finditer(html):
                 games.append(game.groupdict())
 

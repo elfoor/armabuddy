@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from asyncirc.protocol import IrcProtocol
 from asyncirc.server import Server
 from irclib.parser import Message
-from wa_encoder import WA_Encoder
 
 
 class WA_IRC:
@@ -99,7 +98,7 @@ class WA_IRC:
         self._buff += data
         while b'\r\n' in self._buff:
             raw_line, self._buff = self._buff.split(b'\r\n', 1)
-            raw_line = WA_Encoder.decode(raw_line)
+            raw_line = raw_line.decode('wa1252')
             message = Message.parse(raw_line)
             for trigger, func in self.handlers.values():
                 if trigger in (message.command, '*'):
@@ -192,10 +191,8 @@ class WA_IRC:
 
     async def transport_write(self, message):
         if self.connection._connected:
-            message = message + '\r\n'
-            # W:A client transforms some of the cyrillic characters to latin when typing, in addition to encoding
-            message = WA_Encoder.translate(message)
-            message = WA_Encoder.encode(message) if self.transcode else message.encode()
+            message += '\r\n'
+            message = message.encode('wa1252') if self.transcode else message.encode()
             self.connection._transport.write(message)
         else:
             self.logger.warning(' ! Could not forward message due to connection to IRC being down!')

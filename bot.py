@@ -9,6 +9,8 @@ from wa_discord import WA_Discord
 from wa_gamelist import WA_Gamelist
 from wa_irc import WA_IRC
 from wa_settings import WA_Settings
+from wa_encoder import WA1252
+import codecs
 
 
 # FUNCTIONS #
@@ -46,6 +48,9 @@ async def irc_entry_help_handler(connection, message):
 
 # MAIN #
 try:
+    # REGISTER WA1252 CODEC #
+    codecs.register(WA1252.lookup)
+
     # LOGGING SETUP #
     logger = logging.getLogger('WA_Logger')
     logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
