@@ -36,6 +36,10 @@ class WA_Settings:
                 'channels': {
                     783002654501634058: 'anythinggoes',  # Discord channel ID that will mirror WormNET AnythingGoes channel
                     783362534451314718: 'help'  # Discord channel ID that will mirror WormNET Help channel
+                },
+                'wormnet_channel_settings': {
+                    'anythinggoes': 'Pf,Be',
+                    'help': 'Tf'
                 }
             },
             # TeamWormers take 2 / Worms Universe (RU/EN)

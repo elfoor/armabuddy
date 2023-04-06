@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from wa_flags import WA_Flags, COUNTRY_CODES
 import discord
+from wa_commands import host, schemes, wormnat_guide
 discord.VoiceClient.warn_nacl = False
 
 
@@ -52,6 +53,10 @@ class WA_Discord(discord.Client):
             'manage_messages'  # to pin initial messages
         )
         super().__init__(intents=self._intents)
+        self.tree = discord.app_commands.CommandTree(self)
+        self.tree.add_command(host, guilds=tuple(discord.Object(id=guild) for guild in guilds))
+        self.tree.add_command(wormnat_guide, guilds=tuple(discord.Object(id=guild) for guild in guilds))
+        self.tree.add_command(schemes, guilds=tuple(discord.Object(id=guild) for guild in guilds))
 
     # HELPER FUNCTIONS #
 
@@ -447,6 +452,10 @@ class WA_Discord(discord.Client):
 
         if not self.guild_list:
             raise Exception('No guilds configured!')
+
+        self.logger.warning(f' * Syncing commands to guilds')
+        for guild in self.guild_list:
+            await self.tree.sync(guild=discord.Object(id=guild))
 
         self.prepared = True
         self.logger.warning(f' * {self.user.name} has been fully initialized!')
