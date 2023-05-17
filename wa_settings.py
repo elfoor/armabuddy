@@ -55,3 +55,10 @@ class WA_Settings:
             # }
         }
     }
+
+    # HTTP Redir server
+    WA_HTTP_Redir = {
+        'host_ip': '0.0.0.0',
+        'host_port': 17012,
+        'server_headers': {'Server': ''}
+    }

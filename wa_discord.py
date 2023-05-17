@@ -92,9 +92,15 @@ class WA_Discord(discord.Client):
             if not flag:
                 flag = WA_Flags.get(game['country'], self.embed_default_flag)
 
+            game['title'] = discord.utils.escape_markdown(game['title'].replace('\N{NO-BREAK SPACE}', '\N{SPACE}'))
+
             append += self.embed_private_game if game['private'] == '1' else self.embed_public_game
-            append += f'{discord.utils.escape_markdown(game["title"])} \n<wa://{game["host"]}?Scheme=Pf,Be&ID={game["gameid"]}>\n'
-            append += f'Hosted by: {flag} {discord.utils.escape_markdown(game["user"])}\n\n'
+            append += (
+                f'[{game["title"]}]('
+                f'{self.http_redir_url}/?Host={game["host"]}&Port={game["port"]}&Scheme=Pf,Be&ID={game["gameid"]}'
+                ')\n'
+                f'Hosted by: {flag} {discord.utils.escape_markdown(game["user"])}\n\n'
+            )
 
             # fields can't be longer than 1024 characters, so better make sure we don't surpass limit..
             if len(field) + len(append) >= 1024:

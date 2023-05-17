@@ -10,6 +10,7 @@ from wa_gamelist import WA_Gamelist
 from wa_irc import WA_IRC
 from wa_settings import WA_Settings
 from wa_encoder import WA1252
+from wa_http_redir import WA_HTTP_Redir
 import codecs
 
 
@@ -72,6 +73,10 @@ try:
     # LIST SETUP #
     gamelist = WA_Gamelist(**WA_Settings.WA_Gamelist)
     loop.create_task(gamelist.update(discord))
+
+    # HTTP LINK REDIR SETUP #
+    http_redir = WA_HTTP_Redir(loop=loop, **WA_Settings.WA_HTTP_Redir)
+    loop.create_task(http_redir.main())
 
     # FINAL SETUP #
     discord.forward_message = irc.send_message
