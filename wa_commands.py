@@ -6,6 +6,7 @@ from wa_wormnat_guide_poster import main as post_wormnat_guide
 from wa_encoder import WA1252
 from wa_settings_cgarz import WA_Settings
 import logging
+from urllib.parse import urlparse
 
 
 class WA_Commands:
@@ -217,10 +218,17 @@ async def host(interaction: discord.Interaction, scheme: str, game_name: str = '
     if error := host_response['host']['error']:
         return await interaction.response.send_message(f'WebSnoop returned error:\n> {error}', ephemeral=True)
 
-    return await interaction.response.send_message(
-        'Your game is hosted, WebSnoop will advertise it once you join.\n'
-        f'Click this link to join your game: <{host_response["host"]["url"]}>',
-        ephemeral=True)
+    url_parts = urlparse(host_response['host']['url'])
+    host, port = url_parts.netloc.split(':')
+
+    embed = discord.Embed(title='', colour=wa_commands.embed_color)
+    embed.set_thumbnail(url=wa_commands.embed_icon)
+    embed.add_field(name='Host request success!', inline=False,
+                    value=('WebSnoop will advertise it once you join.\n[Click here to join your game.]('
+                           f'{wa_commands.http_redir_url}/?Host={host}&Port={port}&{url_parts.query}'
+                           ')'))
+
+    return await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 @discord.app_commands.command(description='Get a list of schemes supported by /host')
