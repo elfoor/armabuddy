@@ -132,7 +132,7 @@ class WA_IRC:
         elif message.command == 'QUIT':  # remove user from all channel sets if quitting
             for channel in self.channels:
                 self.channels[channel].pop(message.prefix.nick, None)
-        elif message.command == '352':  # WHO request reponse
+        elif message.command == '352':  # WHO request response
             channel = message.parameters[1][1:].lower()
             if channel in self.channels:
                 user = message.parameters[5]
