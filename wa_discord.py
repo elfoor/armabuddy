@@ -11,11 +11,12 @@ discord.VoiceClient.warn_nacl = False
 
 
 class WA_Discord(discord.Client):
-    def __init__(self, token: str, guilds: dict):
+    def __init__(self, *args, **kwargs):
         # internal properties
-        self.token = token  # discord token used for authenticating bot
+        self.http_redir_url = kwargs.get('http_redir_url')
+        self.token = kwargs.get('token')  # discord token used for authenticating bot
         # dict containing settings on which guilds and channels we need to make sure exist
-        self.settings = guilds
+        self.settings = kwargs.get('guilds')
         self.guild_list = {}  # dict that will contain all references to channels and guilds
         self.logger = logging.getLogger('WA_Logger')
         self._intents = discord.Intents.default()
@@ -27,8 +28,8 @@ class WA_Discord(discord.Client):
 
         # embed config
         self.embed_gamelist_title = 'Currently active games in #AnythingGoes'
-        self.embed_color = 0xffa300
-        self.embed_icon = 'https://cdn.discordapp.com/emojis/501802399565086720.png?size=32'
+        self.embed_color = kwargs.get('embed_color')
+        self.embed_icon = kwargs.get('embed_icon')
         self.embed_footer = 'List last refreshed at'
         self.embed_default_flag = WA_Flags['49']
         self.embed_public_game = ':unlock:'
@@ -54,9 +55,9 @@ class WA_Discord(discord.Client):
         )
         super().__init__(intents=self._intents)
         self.tree = discord.app_commands.CommandTree(self)
-        self.tree.add_command(host, guilds=tuple(discord.Object(id=guild) for guild in guilds))
-        self.tree.add_command(wormnat_guide, guilds=tuple(discord.Object(id=guild) for guild in guilds))
-        self.tree.add_command(schemes, guilds=tuple(discord.Object(id=guild) for guild in guilds))
+        self.tree.add_command(host, guilds=tuple(discord.Object(id=guild) for guild in self.settings))
+        self.tree.add_command(wormnat_guide, guilds=tuple(discord.Object(id=guild) for guild in self.settings))
+        self.tree.add_command(schemes, guilds=tuple(discord.Object(id=guild) for guild in self.settings))
 
     # HELPER FUNCTIONS #
 

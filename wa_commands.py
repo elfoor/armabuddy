@@ -4,6 +4,7 @@ import json
 import asyncio
 from wa_wormnat_guide_poster import main as post_wormnat_guide
 from wa_encoder import WA1252
+from wa_settings_cgarz import WA_Settings
 import logging
 
 
@@ -108,6 +109,9 @@ class WA_Commands:
         self.wormnat_global_command_timeout = False
 
         self.logger = logging.getLogger('WA_Logger')
+        self.http_redir_url = WA_Settings.WA_Discord.get('http_redir_url')
+        self.embed_color = WA_Settings.WA_Discord.get('embed_color')
+        self.embed_icon = WA_Settings.WA_Discord.get('embed_icon')
 
     async def clear_wormnat_user_activity(self, user, delay=0.0):
         if delay:

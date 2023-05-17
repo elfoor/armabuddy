@@ -29,6 +29,9 @@ class WA_Settings:
     # DISCORD
     WA_Discord = {
         'token': '[discord-token]',
+        'http_redir_url': 'http://fuckdouchecord.redirectme.net:17012',
+        'embed_color': 0xffa300,
+        'embed_icon': 'https://cdn.discordapp.com/emojis/501802399565086720.png?size=32',
         'guilds': {
             # Worms Armageddon (formally Dōjō)
             416225356706480128: {  # Discord Server ID
