@@ -29,7 +29,7 @@ class WA_Settings:
     # DISCORD
     WA_Discord = {
         'token': '[discord-token]',
-        'http_redir_url': 'http://redirect-htto-to-wa.com:17012',
+        'http_redir_url': 'http://redirect-http-to-wa.com:17012',
         'embed_color': 0xffa300,
         'embed_icon': 'https://cdn.discordapp.com/emojis/501802399565086720.png?size=32',
         'guilds': {
