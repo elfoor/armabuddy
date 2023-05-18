@@ -4,7 +4,7 @@ import json
 import asyncio
 from wa_wormnat_guide_poster import main as post_wormnat_guide
 from wa_encoder import WA1252
-from wa_settings_cgarz import WA_Settings
+from wa_settings import WA_Settings
 import logging
 from urllib.parse import urlparse
 
