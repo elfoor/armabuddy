@@ -17,10 +17,11 @@ class WA_HTTP_Redir:
     def validate_request(self, request):
         if not request.query:
             return False
-        if not all(valid_key in request.query.keys() for valid_key in self.VALID_QUERY_KEYS):
+        if not all(key in self.VALID_QUERY_KEYS for key in request.query.keys()):
             return False
         try:
-            int(request.query['Port'])
+            if port := request.query.get('Port'):
+                int(port)
         except ValueError:
             return False
 
@@ -36,14 +37,17 @@ class WA_HTTP_Redir:
             return
 
         redirect_host = queries.pop('Host')
-        port = queries.pop('Port')
+        port = queries.pop('Port', None)
 
         self.logger.warning(f' * Serving redirect request from {request.remote}.'
                             f" Host='{redirect_host}' {port=} {queries=} {headers=}")
         raise web.HTTPMovedPermanently(
-            location=f'wa://{redirect_host}:{port}/?{parse.urlencode(queries)}',
-            headers=self.server_headers
-        )
+            headers=self.server_headers,
+            location=''.join((
+                f'wa://{redirect_host}',
+                f':{port}' if port is not None else '',
+                f'/?{parse.urlencode(queries)}'
+            )))
 
     async def main(self):
         self.logger.warning(' * Starting HTTP redirector.')
