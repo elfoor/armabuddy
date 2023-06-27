@@ -423,14 +423,14 @@ class WA_Discord(discord.Client):
 
     # EVENT LISTENERS #
 
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.author == self.user or not len(message.clean_content) or message.webhook_id:
             return
 
         # forward to all other discord servers
         irc_channel = await self.find_forward_channel(channel=message.channel)
         sender = message.author.name
-        snooper = 'Other Discord'
+        snooper = 'Other Disc\N{CYRILLIC SMALL LETTER O}rd'  # workaround douchecord being possessive with their name
         await self.send_message(irc_channel=irc_channel, sender=sender, message=message.content, snooper=snooper,
                                 origin=message.channel)
 
