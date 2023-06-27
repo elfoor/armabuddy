@@ -169,6 +169,9 @@ class WA_IRC:
         message = message.split('\n')[0]
 
         # prevent bot from letting itself get banned from n word, hex to avoid any potential github issues
+        message = re.sub('\x6e\x69\x67\x67\x65\x72', '\x6e\x69\x67\x67\x65г', message)
+        message = re.sub('\x4e\x69\x67\x67\x65\x72', '\x4e\x69\x67\x67\x65г', message)
+        message = re.sub('\x4e\x49\x47\x47\x45\x52', '\x4el\x47\x47\x45\x52', message)
         message = re.sub('\x6e\x69\x67\x67\x65\x72', '\x6e\x69\x67\x67\x65г', message, flags=re.IGNORECASE)
 
         message = f'PRIVMSG #{channel} :{message}'
