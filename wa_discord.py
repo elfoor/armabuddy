@@ -2,7 +2,7 @@
 import asyncio
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from wa_flags import WA_Flags, COUNTRY_CODES
 import discord
@@ -25,6 +25,8 @@ class WA_Discord(discord.Client):
         self.prepared = False
         self.irc_reference = None
         self.forward_message = lambda x: x
+        self.flood_prevention_timer_sec = 3
+        self.message_sendable_after = datetime.now(timezone.utc)
 
         # embed config
         self.embed_gamelist_title = 'Currently active games in #AnythingGoes'
@@ -426,6 +428,11 @@ class WA_Discord(discord.Client):
     async def on_message(self, message: discord.Message):
         if message.author == self.user or not len(message.clean_content) or message.webhook_id:
             return
+
+        if self.message_sendable_after > datetime.now(timezone.utc):
+            await message.reply(content=f'Message within {self.flood_prevention_timer_sec} sec flood prevention timeout, ignoring.', mention_author=False)
+            return
+        self.message_sendable_after = datetime.now(timezone.utc) + timedelta(seconds=self.flood_prevention_timer_sec)
 
         # forward to all other discord servers
         irc_channel = await self.find_forward_channel(channel=message.channel)
