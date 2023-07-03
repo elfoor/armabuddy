@@ -25,8 +25,8 @@ class WA_Discord(discord.Client):
         self.prepared = False
         self.irc_reference = None
         self.forward_message = lambda x: x
-        self.flood_prevention_timer_sec = 3
-        self.message_sendable_after = datetime.now(timezone.utc)
+        self.flood_prevention_timer_sec = 6
+        self.message_sendable_after = datetime.now(timezone.utc) + timedelta(seconds=self.flood_prevention_timer_sec)
 
         # embed config
         self.embed_gamelist_title = 'Currently active games in #AnythingGoes'
@@ -365,6 +365,14 @@ class WA_Discord(discord.Client):
 
             await asyncio.sleep(interval)
 
+    async def send_shutdown_message(self, message):
+        if not self.prepared:
+            return
+
+        for guild in self.settings.values():
+            for channel in guild['channels'].values():
+                await channel['webhook'].send(content=message, username=self.user.display_name, avatar_url=None)
+
     # forwards messages to channel using webhooks, if nickname exist on discord it will use their avatar
     async def send_message(self, irc_channel: str, sender: str, message: str, action: bool = False, snooper: str = None,
                            origin: discord.TextChannel = None):
@@ -479,7 +487,11 @@ class WA_Discord(discord.Client):
             await self.tree.sync(guild=discord.Object(id=guild))
 
         self.prepared = True
-        self.logger.warning(f' * {self.user.name} has been fully initialized!')
+        self.logger.warning(f' * {self.user.name} has been fully initialized! Sending ready message.')
+        for guild in self.settings.values():
+            for channel in guild['channels'].values():
+                await channel['webhook'].send(content='Setup finished, bridge enabled.',
+                                              username=self.user.display_name, avatar_url=None)
 
     async def on_disconnect(self):
         self.logger.warning(f' ! {self.user.name} has disconnected from Discord!')

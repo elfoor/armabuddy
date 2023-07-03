@@ -208,7 +208,10 @@ class WA_IRC:
         if message.command == '474':
             raise Exception(f'IRC error: Banned from channel {message.parameters[1]}')
         if message.command == 'ERROR':
-            raise Exception(f'IRC error: "{message.parameters}"')
+            cleaned_message_parameters = re.sub(r'@\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}] \(',
+                                                '@IP] (',
+                                                ' '.join(message.parameters))
+            raise Exception(f'IRC error: "{cleaned_message_parameters}"')
         if message.command == 'PING':  # Seemingly a bug in AsyncIRC, shows only rarely but does show up.
             self.logger.warning(' ! Ping command not handled by AsyncIRC, skipping.')
             return

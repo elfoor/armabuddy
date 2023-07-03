@@ -19,8 +19,13 @@ import codecs
 def fatal_handler(loop, context):
     exception = context.get('exception')
     logger.critical(f' ! {exception}')
-    logger.critical(' ! Encountered FATAL error. Shutting down.\n')
+    logger.critical(' ! Encountered FATAL error. Notifying and shutting down.\n')
     traceback.print_exception(type(exception), exception, exception.__traceback__)
+    loop.create_task(shutdown(f'Shutting down due to:```\n{exception}```'))
+
+
+async def shutdown(message):
+    await discord.send_shutdown_message(message)
     loop.stop()
 
 
@@ -92,6 +97,7 @@ try:
     loop.run_forever()  # this works, NICE!
 except KeyboardInterrupt:
     logger.critical(' ! Encountered KbdInterrupt. Shutting down.\n')
-    loop.stop()
+    loop.create_task(shutdown(f'Shutting down at request of system'))
+    loop.run_forever()
 except Exception as e:
     print(e)
