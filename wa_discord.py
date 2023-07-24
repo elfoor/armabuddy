@@ -18,6 +18,7 @@ class WA_Discord(discord.Client):
         # dict containing settings on which guilds and channels we need to make sure exist
         self.settings = kwargs.get('guilds')
         self.guild_list = {}  # dict that will contain all references to channels and guilds
+        self.message_channels = {}  # dict of all message channels for all guilds
         self.logger = logging.getLogger('WA_Logger')
         self._intents = discord.Intents.default()
         self._intents.members = True
@@ -369,9 +370,8 @@ class WA_Discord(discord.Client):
         if not self.prepared:
             return
 
-        for guild in self.settings.values():
-            for channel in guild['channels'].values():
-                await channel['webhook'].send(content=message, username=self.user.display_name, avatar_url=None)
+        for channel in self.message_channels.values():
+            await channel['webhook'].send(content=message, username=self.user.display_name, avatar_url=None)
 
     # forwards messages to channel using webhooks, if nickname exist on discord it will use their avatar
     async def send_message(self, irc_channel: str, sender: str, message: str, action: bool = False, snooper: str = None,
@@ -436,6 +436,8 @@ class WA_Discord(discord.Client):
     async def on_message(self, message: discord.Message):
         if message.author == self.user or not len(message.clean_content) or message.webhook_id:
             return
+        if message.guild.id not in self.settings.keys() or message.channel.id not in self.message_channels.keys():
+            return  # only interact with properly setup guilds and channels
 
         if self.message_sendable_after > datetime.now(timezone.utc):
             await message.reply(content=f'Message within {self.flood_prevention_timer_sec} sec flood prevention timeout, ignoring.', mention_author=False)
@@ -486,12 +488,17 @@ class WA_Discord(discord.Client):
         for guild in self.guild_list:
             await self.tree.sync(guild=discord.Object(id=guild))
 
+        self.message_channels = {
+            channel_id: channel
+            for guild in self.guild_list.values()
+            for channel_id, channel in guild['channels'].items()
+        }
+
         self.prepared = True
         self.logger.warning(f' * {self.user.name} has been fully initialized! Sending ready message.')
-        for guild in self.settings.values():
-            for channel in guild['channels'].values():
-                await channel['webhook'].send(content='Setup finished, bridge enabled.',
-                                              username=self.user.display_name, avatar_url=None)
+        for channel in self.message_channels.values():
+            await channel['webhook'].send(content='Setup finished, bridge enabled.',
+                                          username=self.user.display_name, avatar_url=None)
 
     async def on_disconnect(self):
         self.logger.warning(f' ! {self.user.name} has disconnected from Discord!')

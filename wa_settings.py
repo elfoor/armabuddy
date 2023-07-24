@@ -21,8 +21,8 @@ class WA_Settings:
                         r' \Rhttps://\rdiscord.gg/UBRBhk6'.replace('_', '\N{NO-BREAK SPACE}'),
         'channels': ['anythinggoes', 'help'],
         'ignore': [  # WormNET usernames whose messages should not be forwarded to discord
-            'WormsLeague',  # Spammer
-            'CorujaBOT'     # League spammer
+            # 'WormsLeague',  # Spammer
+            # 'CorujaBOT'     # League spammer
         ]
     }
 
@@ -46,13 +46,13 @@ class WA_Settings:
                 }
             },
             # TeamWormers take 2 / Worms Universe (RU/EN)
-            # 918454442079178813: {
-            #     'gamelist': 918454442800607247,
-            #     'channels': {
-            #         918454442800607246: 'anythinggoes',
-            #         983773668041703464: 'help'
-            #     }
-            # }
+            918454442079178813: {
+                'gamelist': 918454442800607247,
+                'channels': {
+                    918454442800607246: 'anythinggoes',
+                    983773668041703464: 'help'
+                }
+            }
         }
     }
 
