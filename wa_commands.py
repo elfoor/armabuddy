@@ -4,6 +4,7 @@ import json
 import asyncio
 from wa_wormnat_guide_poster import main as post_wormnat_guide
 from wa_encoder import WA1252
+import wa_discord
 from wa_settings import WA_Settings
 import logging
 from urllib.parse import urlparse
@@ -176,25 +177,12 @@ async def host(interaction: discord.Interaction, scheme: str, game_name: str = '
             f'Cannot host in <#{interaction.channel_id}> as it forwards to WormNET'
             f' {discord.utils.escape_markdown("#" + forward_channel)} which does not allow hosting.')
 
-    if game_name:
-        has_bad_characters = False
-        formatted_bad_characters_name = ''
-        for char in game_name:
-            if char in WA1252.decoding_table:
-                formatted_bad_characters_name += discord.utils.escape_markdown(char)
-            else:
-                has_bad_characters = True
-                formatted_bad_characters_name += f'**__{discord.utils.escape_markdown(char)}__**'
-            formatted_bad_characters_name += '\N{Zero Width Space}'  # to allow discord formatting to be side by side
-
-        if has_bad_characters:
-            return await interaction.response.send_message(
-                "**Unable to host. Please choose another game name.**\n"
-                "One or more characters in your chosen game name cannot be represented with WA's character set.\n"
-                f'To avoid this error change any bold underlined characters in your game name:\n'
-                f'> {formatted_bad_characters_name}\n\n'
-                'Allowed characters reference: <https://worms2d.info/WA_character_table>',
-                ephemeral=True)
+    if game_name and not all(char in WA1252.handled_characters for char in game_name):
+        return await interaction.response.send_message(
+            '**Unable to host. Game name contains unsupported characters.**\n'
+            'Remove or change any unhidden characters and try again:\n'
+            f'>>> {wa_discord.WA_Discord.format_bad_characters(game_name)}',
+            ephemeral=True)
 
     if wa_commands.host_global_command_timeout:
         return await interaction.response.send_message('This command has been used too recently', ephemeral=True)
@@ -204,7 +192,7 @@ async def host(interaction: discord.Interaction, scheme: str, game_name: str = '
 
     if not game_name:
         unaliased_scheme_name = wa_commands.SCHEME_IDS_NAMES[scheme_id][0]
-        if all(char in WA1252.decoding_table for char in interaction.user.display_name):
+        if all(char in WA1252.handled_characters for char in interaction.user.display_name):
             game_name = f'{unaliased_scheme_name} for {interaction.user.display_name}'
         else:
             game_name = unaliased_scheme_name

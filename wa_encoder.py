@@ -2,10 +2,9 @@ import codecs
 
 
 class WA1252(codecs.Codec):  # WA character set codec
-    translation_table = str.maketrans(
-        'аеёорстухАВЕЁМНОРСТХĄąĆćĘęŁłŃńŚśŹźŻż',
-        'aeëopcтyxABEËMHOPCTXAaCcEeLlNnSsZzZz'
-    )
+    translate_characters_in  = 'аеёорстухАВЕЁМНОРСТХĄąĆćĘęŁłŃńŚśŹźŻż'
+    translate_characters_out = 'aeëopcтyxABEËMHOPCTXAaCcEeLlNnSsZzZz'
+    translation_table = str.maketrans(translate_characters_in, translate_characters_out)
 
     decoding_table = (  # cp1252 with tweaks (marked with * before name). ref: https://worms2d.info/WA_character_table
         '\0'    # 0x00 -> \u0000 NULL
@@ -268,6 +267,7 @@ class WA1252(codecs.Codec):  # WA character set codec
         'ÿ'     # 0xFF -> \u00FF LATIN SMALL LETTER Y WITH DIAERESIS
     )
     encoding_table = codecs.charmap_build(decoding_table)
+    handled_characters = set(''.join(decoding_table) + translate_characters_in)
 
     @classmethod
     def encode(cls, input_, errors='strict'):

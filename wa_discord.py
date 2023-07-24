@@ -4,6 +4,7 @@ import logging
 import re
 from datetime import datetime, timezone, timedelta
 
+from wa_encoder import WA1252
 from wa_flags import WA_Flags, COUNTRY_CODES
 import discord
 from wa_commands import host, schemes, wormnat_guide
@@ -403,25 +404,26 @@ class WA_Discord(discord.Client):
             guild = settings['guild']
             for channel_settings in settings['channels'].values():
                 channel = channel_settings['channel']
-                if channel_settings['forward'] == irc_channel and origin != channel_settings['channel']:
+                if channel_settings['forward'] != irc_channel or origin == channel_settings['channel']:
+                    continue
 
-                    # log type of message, and message contents
-                    if origin:
-                        self.logger.warning(f' * Forwarding message by {sender} on Discord #{origin.name} on'
-                                            f' "{origin.guild.name}" to #{channel.name} on "{guild.name}": {message}')
-                    else:
-                        self.logger.warning(f' * Forwarding message by {sender} on WormNET #{irc_channel} to '
-                                            f'#{channel.name} on "{guild.name}": {message}')
+                # log type of message, and message contents
+                if origin:
+                    self.logger.warning(f' * Forwarding message by {sender} on Discord #{origin.name} on'
+                                        f' "{origin.guild.name}" to #{channel.name} on "{guild.name}": {message}')
+                else:
+                    self.logger.warning(f' * Forwarding message by {sender} on WormNET #{irc_channel} to '
+                                        f'#{channel.name} on "{guild.name}": {message}')
 
-                    # then proceed to find user avatar if possible, and post it using the webhook
-                    member = guild.get_member_named(sender)
-                    username = sender if not snooper else f'{sender} ({snooper})'
-                    avatar_url = member.display_avatar if isinstance(member, discord.Member) else None
-                    # workaround douchecord being possessive with their name
-                    username = re.sub('discord', 'Disc\N{CYRILLIC SMALL LETTER O}rd', username, flags=re.IGNORECASE)
-                    # workaround triple backtick issue
-                    username = username.replace('```', '\N{MODIFIER LETTER GRAVE ACCENT}' * 3)
-                    await channel_settings['webhook'].send(content=message, username=username, avatar_url=avatar_url)
+                # then proceed to find user avatar if possible, and post it using the webhook
+                member = guild.get_member_named(sender)
+                username = sender if not snooper else f'{sender} ({snooper})'
+                avatar_url = member.display_avatar if isinstance(member, discord.Member) else None
+                # workaround douchecord being possessive with their name
+                username = re.sub('discord', 'Disc\N{CYRILLIC SMALL LETTER O}rd', username, flags=re.IGNORECASE)
+                # workaround triple backtick issue
+                username = username.replace('```', '\N{MODIFIER LETTER GRAVE ACCENT}' * 3)
+                await channel_settings['webhook'].send(content=message, username=username, avatar_url=avatar_url)
 
     # find forwarding channel name as string
     async def find_forward_channel(self, channel: discord.TextChannel):
@@ -430,6 +432,22 @@ class WA_Discord(discord.Client):
                 if channel_info['channel'] == channel and guild_info['guild'] == channel.guild:
                     return channel_info['forward']
         return False
+
+    @staticmethod
+    def format_bad_characters(message: str) -> str:
+        hide_character_previous = message[0] in WA1252.handled_characters
+        msg_parts = ['', ''] if hide_character_previous else ['']
+        for char in message:
+            hide_character = char in WA1252.handled_characters
+            if hide_character != hide_character_previous:
+                msg_parts.append('')
+            msg_parts[-1] += char
+            hide_character_previous = hide_character
+
+        if message[-1] in WA1252.handled_characters:
+            msg_parts.append('')
+
+        return '||'.join(discord.utils.escape_markdown(msg_part) for msg_part in msg_parts)
 
     # EVENT LISTENERS #
 
@@ -440,29 +458,41 @@ class WA_Discord(discord.Client):
             return  # only interact with properly setup guilds and channels
 
         if self.message_sendable_after > datetime.now(timezone.utc):
-            await message.reply(content=f'Message within {self.flood_prevention_timer_sec} sec flood prevention timeout, ignoring.', mention_author=False)
+            await message.reply(content=f'Message within {self.flood_prevention_timer_sec} sec flood'
+                                        f' prevention timeout, ignoring.', mention_author=False)
             return
         self.message_sendable_after = datetime.now(timezone.utc) + timedelta(seconds=self.flood_prevention_timer_sec)
 
-        # forward to all other discord servers
-        irc_channel = await self.find_forward_channel(channel=message.channel)
-        sender = message.author.name
-        snooper = 'Other Disc\N{CYRILLIC SMALL LETTER O}rd'  # workaround douchecord being possessive with their name
-        await self.send_message(irc_channel=irc_channel, sender=sender, message=message.content, snooper=snooper,
-                                origin=message.channel)
-
-        # finally forward to IRC
+        # forward to IRC
         for settings in self.guild_list.values():
             guild = settings['guild']
             for channel_settings in settings['channels'].values():
                 channel = channel_settings['channel']
-                if channel == message.channel and guild == message.guild:
-                    await self.forward_message(
+                if channel != message.channel or guild != message.guild:
+                    continue
+
+                try:
+                    await self.forward_message(  # todo: add message queue here
                         guild=guild.name,
                         origin=channel.name,
                         channel=channel_settings['forward'],
                         message=f'{message.author.display_name}> {message.clean_content}'
                     )
+                except UnicodeEncodeError:
+                    formatted_message = self.format_bad_characters(message.clean_content)
+                    await message.reply(content='**Cannot post message. Unsupported characters present.**\n'
+                                                'Remove or change any unhidden characters and try again:\n'
+                                                f'>>> {formatted_message}',
+                                                mention_author=False)
+                    return
+
+        # forward to all other discord servers
+        irc_channel = await self.find_forward_channel(channel=message.channel)
+        sender = message.author.display_name
+        snooper = 'Other Disc\N{CYRILLIC SMALL LETTER O}rd'  # workaround douchecord being possessive with their name
+        await self.send_message(irc_channel=irc_channel, sender=sender, message=message.content,
+                                snooper=snooper,
+                                origin=message.channel)
 
     # catch all errors and propagate this error to the loop exception handler
     async def on_error(self, event):
