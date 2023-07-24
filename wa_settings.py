@@ -35,6 +35,7 @@ class WA_Settings:
         'guilds': {
             # Worms Armageddon (formally Dōjō)
             416225356706480128: {  # Discord Server ID
+                'disable_forwarding': False,  # If true: Only reads WormNET messages, disables sending from this server
                 'gamelist': 783363290557579305,  # Discord channel ID to add the game list embed to
                 'channels': {
                     783002654501634058: 'anythinggoes',  # Discord channel ID that will mirror WormNET AnythingGoes channel

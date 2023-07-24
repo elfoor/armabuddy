@@ -132,7 +132,8 @@ class WA_Discord(discord.Client):
                 self.guild_list[guild.id] = {
                     'guild': guild,
                     'channels': self.settings[guild.id]['channels'],
-                    'gamelist': self.settings[guild.id]['gamelist']
+                    'gamelist': self.settings[guild.id]['gamelist'],
+                    'disable_forwarding': self.settings[guild.id].get('disable_forwarding', False)
                 }
             else:
                 self.logger.warning(f' ! Could not find guild "{guild.name}" in settings.')
@@ -457,6 +458,10 @@ class WA_Discord(discord.Client):
         if message.guild.id not in self.settings.keys() or message.channel.id not in self.message_channels.keys():
             return  # only interact with properly setup guilds and channels
 
+        if self.guild_list[message.guild.id]['disable_forwarding']:
+            await message.reply(content=f'Forwarding messages is disabled for this server.', mention_author=False)
+            return
+
         if self.message_sendable_after > datetime.now(timezone.utc):
             await message.reply(content=f'Message within {self.flood_prevention_timer_sec} sec flood'
                                         f' prevention timeout, ignoring.', mention_author=False)
@@ -472,7 +477,7 @@ class WA_Discord(discord.Client):
                     continue
 
                 try:
-                    await self.forward_message(  # todo: add message queue here
+                    await self.forward_message(
                         guild=guild.name,
                         origin=channel.name,
                         channel=channel_settings['forward'],
